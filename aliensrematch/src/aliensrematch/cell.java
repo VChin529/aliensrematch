@@ -1,6 +1,6 @@
 package aliensrematch;
 
-public class cell implements Comparable<cell> {
+public class cell {
 	cell up, down, left, right;   // pointers to neighbors
 	int neighbor_ct;   // # of open neighbors
 	int x, y;   // coordinates
@@ -60,35 +60,6 @@ public class cell implements Comparable<cell> {
 			}
 		}
 
-	}
-
-	
-	
-	// for bot3 use
-	// checks if any of the cell's neighbors are aliens
-	boolean isAlienAdjacent() {
-		if ((up!=null)&&up.alien == true) {
-			return true;
-		}
-		if ((down!=null)&&down.alien == true) {
-			return true;
-		}
-		if ((left!=null)&&left.alien == true) {
-			return true;
-		}
-		if ((right!=null)&& right.alien == true) {
-			return true;
-		}
-		return false;
-	}
-
-
-	
-	// for bot4 use
-	// compare by h when putting into priority queue
-	@Override
-	public int compareTo(cell o) {
-		return Double.compare(this.h, o.h);
 	}
 
 }
