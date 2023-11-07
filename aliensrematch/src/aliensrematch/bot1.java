@@ -28,14 +28,16 @@ public class bot1 {
 		while (alienScanCoord(alien.x, alien.y)) {
 			alien = new alien(board);
 		}
-		
+		double scanSize = scanRadiusBlocks();
+		System.out.println("Bot is at: x: "+ curr.x + " y: "+ curr.y+ " size:"+ scanSize);
 		// initialize alien probabilities
 		for (int i = 0; i < 5 ; i++) {
 			for (int j = 0; j < 5; j++) {
 				if (alienScanCoord(i,j)) {
 					board.board[i][j].palien1 = 0;
 				} else {
-					board.board[i][j].palien1 = 1/((5*5) - (Math.pow((2*k + 1), 2)));
+					
+					board.board[i][j].palien1 = (1.0/((board.d*board.d)-scanSize));
 				}
 			}
 		}	
@@ -46,6 +48,9 @@ public class bot1 {
 		while (x == crewmember.x && y == crewmember.y) {
 			crewmember.generateCrewmember();
 		}
+		
+		System.out.println("Init board:");
+		printBoardP(1);
 	}
 
 	
@@ -162,8 +167,8 @@ public class bot1 {
 	// alien scanner version 1
 	// checks if given coordinate falls within alien scanner range
 	boolean alienScanCoord(int i, int j) {
-		if ((x - k) < i && i < (x + k)) {
-			if (((y - k) < j && j < (y + k))) {
+		if ((x - k) <= i && i <= (x + k)) {
+			if (((y - k) <= j && j <= (y + k))) {
 				return true;
 			}
 		}
@@ -179,35 +184,38 @@ public class bot1 {
 		int i_start = x;
 		for (int l = 0; l < k; l++) {
 			i_start--;
-			if (i_start < 0) {
+			if (i_start <= 0) {
 				break;
 			}
+			
 		}
 
 		int i_end = x;
 		for (int l = 0; l < k; l++) {
 			i_end++;
-			if (i_start >= board.board.length) {
+			if (i_end >= board.board.length-1) {
 				break;
 			}
+			
 		}
 
 		int j_start = y;
 		for (int l = 0; l < k; l++) {
 			j_start--;
-			if (j_start < 0) {
+			if (j_start <= 0) {
 				break;
 			}
 		}
 
-		int j_end = x;
+		int j_end = y;
 		for (int l = 0; l < k; l++) {
 			j_end++;
-			if (j_start >= board.board.length) {
+			if (j_end >= board.board.length-1) {
 				break;
 			}
 		}
-
+		
+		
 		// checks bounds for alien
 		for (int i = i_start; i < i_end; i++) {
 			for (int j = j_start; j < j_end; j++) {
@@ -219,7 +227,62 @@ public class bot1 {
 
 		return false;
 	}
+	//finds number of blocks in the robots scan radius 
+	
+	double scanRadiusBlocks() {
+		// establishes entire scanner area k up, down, left, right
+		int i_start = x;
+		for (int l = 0; l < k; l++) {
+			if (i_start <= 0) {
+				break;
+			}
+			i_start--;
+			
+			
+			
+		}
 
+		int i_end = x;
+		for (int l = 0; l < k; l++) {
+			
+			if (i_end >= board.board.length-1) {
+				break;
+			}
+			i_end++;
+			
+			
+		}
+
+		int j_start = y;
+		for (int l = 0; l < k; l++) {
+			if (j_start <= 0) {
+				break;
+			}
+			j_start--;
+			
+		}
+
+		int j_end = y;
+		for (int l = 0; l < k; l++) {
+			if (j_end >= board.board.length-1) {
+				break;
+			}
+			j_end++;
+			
+		}
+		
+		double count =0;
+		// checks bounds for alien
+		System.out.println("I start: "+i_start +" end: "+ i_end + " J start: " +j_start + " end: "+ j_end);
+		for (int i = i_start; i <= i_end; i++) {
+			for (int j = j_start; j <= j_end; j++) {
+				count++;
+			}
+			
+		}
+
+		return count;
+	}
 	
 	
 	// calculate alien probabilities
@@ -418,7 +481,7 @@ public class bot1 {
 	// print probabilities
 	// 1 = alien, 2 = crewmember, 3 = both
 	void printBoardP(int n) {
-		DecimalFormat df = new DecimalFormat("0.00");
+		DecimalFormat df = new DecimalFormat("0.0000");
 		
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
