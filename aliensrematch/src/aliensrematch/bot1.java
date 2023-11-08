@@ -1,17 +1,17 @@
 package aliensrematch;
 
 import java.util.*;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 public class bot1 {
-	int x, y, k; // coordinates
+	int x, y; // coordinates
+	int k; // dimension of alien scanner radius
+	int alpha; // sensitivity of crewmember scanner
 	board board; // board that the bot is on
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	int debug = 1; // utility for debugging. ignore.
-	int debugq = 0;
-	int alpha;
+	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot1(int k) {
 		// generate board dimension 50x50
@@ -23,14 +23,16 @@ public class bot1 {
 		this.y = curr.y;
 		this.k = k;
 		this.alpha=2;
+		
 		// generate 1 alien
 		alien = new alien(board);
 		while (alienScanCoord(alien.x, alien.y)) {
 			alien = new alien(board);
 		}
+		
+		// initialize alien probabilities
 		double scanSize = scanRadiusBlocks();
 		System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
-		// initialize alien probabilities
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {
 				if (alienScanCoord(i, j)) {
@@ -43,12 +45,15 @@ public class bot1 {
 			}
 		}
 
-		// initialize crewmember
+		// generate crewmember
 		// if in the same position as bot, redo
 		crewmember = new crewmember(board);
 		while (x == crewmember.x && y == crewmember.y) {
 			crewmember.generateCrewmember();
 		}
+		
+		// TODO
+		// initialize crewmember probabilities
 
 		System.out.println("Init board:");
 		printBoardP(1);
@@ -81,7 +86,7 @@ public class bot1 {
 					&& (curr.up.isValid(ignore))) {
 				queue.add(curr.up);
 
-				if (debugq == 1) {
+				if (debugpath == 1) {
 					System.out.println("adding" + curr.up.x + " " + curr.up.y);
 				}
 				curr.up.parent = curr;
@@ -89,7 +94,7 @@ public class bot1 {
 			if ((!queue.contains(curr.down)) && (curr.down != null) && (!visited.contains(curr.down))
 					&& (curr.down.isValid(ignore))) {
 				queue.add(curr.down);
-				if (debugq == 1) {
+				if (debugpath == 1) {
 					System.out.println("adding" + curr.down.x + " " + curr.down.y);
 				}
 				curr.down.parent = curr;
@@ -97,7 +102,7 @@ public class bot1 {
 			if ((!queue.contains(curr.left)) && (curr.left != null) && (!visited.contains(curr.left))
 					&& (curr.left.isValid(ignore))) {
 				queue.add(curr.left);
-				if (debugq == 1) {
+				if (debugpath == 1) {
 					System.out.println("adding" + curr.left.x + " " + curr.left.y);
 				}
 				curr.left.parent = curr;
@@ -105,7 +110,7 @@ public class bot1 {
 			if ((!queue.contains(curr.right)) && (curr.right != null) && (!visited.contains(curr.right))
 					&& curr.right.isValid(ignore)) {
 				queue.add(curr.right);
-				if (debugq == 1) {
+				if (debugpath == 1) {
 					System.out.println("adding" + curr.right.x + " " + curr.right.y);
 				}
 				curr.right.parent = curr;
@@ -154,6 +159,44 @@ public class bot1 {
 			}
 		}
 	}
+	
+	// finds number of cells in the alien scan radius
+	// might not be the entire (2k+1)*(2k+1) area because the bot might be by an edge
+	double scanRadiusBlocks() {
+		// establishes entire scanner area k up, down, left, right
+		int i_start = x;
+		for (int l = 0; l < k; l++) {
+			if (i_start <= 0) {break;}
+			i_start--;
+		}
+		int i_end = x;
+		for (int l = 0; l < k; l++) {
+			if (i_end >= board.board.length - 1) {break;}
+			i_end++;
+		}
+
+		int j_start = y;
+		for (int l = 0; l < k; l++) {
+			if (j_start <= 0) {break;}
+			j_start--;
+		}
+		int j_end = y;
+		for (int l = 0; l < k; l++) {
+			if (j_end >= board.board.length - 1) {break;}
+			j_end++;
+		}
+
+		// counts number of cells
+		double count = 0;
+		System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
+		for (int i = i_start; i <= i_end; i++) {
+			for (int j = j_start; j <= j_end; j++) {
+				count++;
+			}
+		}
+
+		return count;
+	}
 
 	// alien scanner version 1
 	// checks if given coordinate falls within alien scanner range
@@ -167,7 +210,7 @@ public class bot1 {
 	}
 
 	// alien scanner version 2
-	// checks entire scanner area
+	// checks entire scanner area for alien
 	boolean alienScan() {
 		// establishes entire scanner area k up, down, left, right
 		int i_start = x;
@@ -176,117 +219,55 @@ public class bot1 {
 			if (i_start <= 0) {
 				break;
 			}
-
 		}
-
 		int i_end = x;
 		for (int l = 0; l < k; l++) {
 			i_end++;
-			if (i_end >= board.board.length - 1) {
-				break;
-			}
-
+			if (i_end >= board.board.length - 1) {break;}
 		}
 
 		int j_start = y;
 		for (int l = 0; l < k; l++) {
 			j_start--;
-			if (j_start <= 0) {
-				break;
-			}
+			if (j_start <= 0) {break;}
 		}
-
 		int j_end = y;
 		for (int l = 0; l < k; l++) {
 			j_end++;
-			if (j_end >= board.board.length - 1) {
-				break;
-			}
+			if (j_end >= board.board.length - 1) {break;}
 		}
 
-		// checks bounds for alien
+		// checks within these bounds for alien
 		for (int i = i_start; i < i_end; i++) {
 			for (int j = j_start; j < j_end; j++) {
-				if (i == alien.x && j == alien.y) {
-					return true;
-				}
+				if (i == alien.x && j == alien.y) {return true;}
 			}
 		}
-
 		return false;
 	}
-	// finds number of blocks in the robots scan radius
-
-	double scanRadiusBlocks() {
-		// establishes entire scanner area k up, down, left, right
-		int i_start = x;
-		for (int l = 0; l < k; l++) {
-			if (i_start <= 0) {
-				break;
-			}
-			i_start--;
-
-		}
-
-		int i_end = x;
-		for (int l = 0; l < k; l++) {
-
-			if (i_end >= board.board.length - 1) {
-				break;
-			}
-			i_end++;
-
-		}
-
-		int j_start = y;
-		for (int l = 0; l < k; l++) {
-			if (j_start <= 0) {
-				break;
-			}
-			j_start--;
-
-		}
-
-		int j_end = y;
-		for (int l = 0; l < k; l++) {
-			if (j_end >= board.board.length - 1) {
-				break;
-			}
-			j_end++;
-
-		}
-
-		double count = 0;
-		// checks bounds for alien
-		System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
-		for (int i = i_start; i <= i_end; i++) {
-			for (int j = j_start; j <= j_end; j++) {
-				count++;
-			}
-
-		}
-
-		return count;
-	}
-
-	void botMoveProbability() {
-		// detection goes off
-
+	
+	// calculate alien probabilities when the bot moves
+	void botMoveAlienProbability() {
+		// scanner goes off
 		if (alienScan()) {
-
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
+					// alien can only be in the new cells we just moved into
+					// the only cells in the scan area whose probabilities were not already 0
 					if (alienScanCoord(i, j) && curr.palien1 != 0) {
 						curr.palien1 = 1.0 / (2.0 * k + 1.0);
-					} else {
-
+					} else { // everything else is 0
+						curr.palien1 = 0;
 					}
 				}
 			}
-			// detection does not go off
+			
+			
+		// scanner does not go off
 		} else {
-			double beta = 0;
+			double beta = 0; // to calculate normalization constant
+			// the new cells we just moved into now have a probability of 0
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -295,8 +276,9 @@ public class bot1 {
 					}
 					beta += curr.palien1;
 				}
-
 			}
+			
+			// normalize
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -307,12 +289,78 @@ public class bot1 {
 
 	}
 
+	// calculate alien probabilities when aliens move
+	void alienMoveAlienProbability() {
+		// copying old probabilities for reference
+		double[][] probs = new double[board.board.length][board.board.length];
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				probs[i][j] = board.board[i][j].palien1;
+			}
+		}
+
+		double beta = 0; // to calculate normalization constant
+
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				cell curr = board.board[i][j];
+
+				// bot position has p = 0
+				if (x == i & y == j) {
+					curr.palien1 = 0;
+					
+				// if we scanned an alien but are outside of radar zone
+				} else if (alienScan() && !alienScanCoord(i, j)) {
+					curr.palien1 = 0;
+					
+				// no alien scan
+				// OR alien scan within radar zone
+				// for each neighbor, probability that alien was in that cell * probability alien moved into current cell
+				} else {
+					curr.palien1 = 0;
+					cell n = curr.up;
+					if (n != null && n.state) {
+						curr.palien1 += probs[i - 1][j] * (1.0/n.neighbor_ct);
+					}
+					n = curr.down;
+					if (n != null && n.state) {
+						curr.palien1 += probs[i + 1][j] * (1.0/n.neighbor_ct);
+					}
+					n = curr.left;
+					if (n != null && n.state) {
+						curr.palien1 += probs[i][j - 1] * (1.0/n.neighbor_ct);
+					}
+					n = curr.right;
+					if (n != null && n.state) {
+						curr.palien1 += probs[i][j + 1] * (1.0/n.neighbor_ct);
+					}
+
+				}
+
+				beta += curr.palien1;
+			}
+		}
+
+		
+		// normalize
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				cell curr = board.board[i][j];
+				curr.palien1 = (1.0 / beta) * curr.palien1;
+			}
+		}
+
+	}
+	
+	// sets off crewmember detection beep
 	boolean beep() {
 
 		return false;
 	}
 
+	// calculate crewmember probabilities
 	void probabilityCrewmate() {
+		// if the bot gets a beep
 		if (beep()) {
 			board.board[x][y].pcrew1 = 0;
 			for (int i = 0; i < board.board.length; i++) {
@@ -321,9 +369,11 @@ public class bot1 {
 					board.board[i][j].pcrew1*= Math.pow(Math.E, -alpha -1);
 				}
 			}
+		
+		// if the bot does not get a beep
 		} else {
-			double beta = 0;
 			board.board[x][y].pcrew1 = 0;
+			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					beta += board.board[i][j].pcrew1;
@@ -341,68 +391,6 @@ public class bot1 {
 
 	}
 
-	// calculate alien probabilities
-	void alienMoveProbability() {
-		// copying old probabilities for reference
-		double[][] probs = new double[board.board.length][board.board.length];
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				probs[i][j] = board.board[i][j].palien1;
-			}
-		}
-
-		double beta = 0; // to calculate normalization constant
-
-		// walk the board
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				cell curr = board.board[i][j];
-
-				// bot position is p = 0
-				if (x == i & y == j) {
-					curr.palien1 = 0;
-					// if we scanned an alien but are outside of radar zone
-				} else if (alienScan() && !alienScanCoord(i, j)) {
-					curr.palien1 = 0;
-					// probability calculation
-					// no alien scan
-					// OR alien scan within radar zone
-				} else {
-					curr.palien1 = 0;
-					cell n = curr.up;
-					if (n != null && n.state) {
-						curr.palien1 += probs[i - 1][j] * n.neighbor_ct;
-					}
-					n = curr.down;
-					if (n != null && n.state) {
-						curr.palien1 += probs[i + 1][j] * n.neighbor_ct;
-					}
-					n = curr.left;
-					if (n != null && n.state) {
-						curr.palien1 += probs[i][j - 1] * n.neighbor_ct;
-					}
-					n = curr.right;
-					if (n != null && n.state) {
-						curr.palien1 += probs[i][j + 1] * n.neighbor_ct;
-					}
-
-				}
-
-				beta += curr.palien1;
-			}
-		}
-
-		System.out.println(beta);
-		// normalize
-
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				cell curr = board.board[i][j];
-				curr.palien1 = (1.0 / beta) * curr.palien1;
-			}
-		}
-
-	}
 
 	// run the bot
 	int[] run() {
@@ -433,7 +421,10 @@ public class bot1 {
 			x = curr.x;
 			y = curr.y;
 			step++;
-			botMoveProbability();
+			
+			// update alien probabilities
+			botMoveAlienProbability();
+			
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
@@ -456,7 +447,7 @@ public class bot1 {
 			// move aliens
 			alien.move();
 
-			alienMoveProbability();
+			alienMoveAlienProbability();
 
 			// alien check
 			if (board.getCell(x, y).alien == true) {
