@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class board {
 	int d;   // dimensions of the board
 	cell[][] board;   //2D array of cells. this is the board.
+	int open = 0;
 
 	public board(int d) {
 		this.d = d;
@@ -56,6 +57,7 @@ public class board {
 			
 			// open the cell
 			curr.state = true;
+			open++;
 
 			// collect all of its neighbors
 			// increment their neighbor_ct because their neighbor curr has been opened
