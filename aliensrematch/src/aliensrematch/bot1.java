@@ -13,16 +13,21 @@ public class bot1 {
 	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
-	public bot1(int k) {
+	public bot1(int k, int alpha) {
+		// initialize k and alpha values
+		this.k = k;
+		this.alpha= alpha;
+		
+		
 		// generate board dimension 50x50
 		board = new board(5);
 
+		
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
 		this.y = curr.y;
-		this.k = k;
-		this.alpha=2;
+		
 
 		// generate 1 alien
 		alien = new alien(board);
@@ -32,34 +37,32 @@ public class bot1 {
 		}
 
 		// initialize alien probabilities
-		// keep track of open cells
-		double scanSize = scanRadiusBlocks();
+		double scanSize = scanRadiusBlocks(); // keeps track of how many open cells are in alien scan zone
 		System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {
 				cell c = board.board[i][j];
-				if (!c.state) {
+				if (!c.state) { // closed cell
 					c.palien1 = 0;
-					c.pcrew1= 0;
-				} else if (alienScanCoord(i, j)) {
+				} else if (alienScanCoord(i, j)) { // in alien scan radar
 					c.palien1 = 0;
-					c.pcrew1 = 0;
-				} else {
-					c.pcrew1 = (1.0 / ((board.open) - scanSize));
+				} else { // equally distribute probability amongst other cells
 					c.palien1 = (1.0 / ((board.open) - scanSize));
 				}
 			}
 		}
 
+		
 		// generate crewmember
 		// if in the same position as bot, redo
+		// TODO change to range of bot
 		crewmember = new crewmember(board);
 		while (x == crewmember.x && y == crewmember.y) {
 			crewmember.generateCrewmember();
 		}
 
-		// TODO
-		// initialize crewmember probabilities
+		// initialize crew probabilities
+		initCrewProbs();
 
 	}
 
@@ -294,7 +297,6 @@ public class bot1 {
 					if (alienScanCoord(i, j)) {
 						curr.palien1 = 0;
 					}
-					System.out.println(curr.palien1);
 					beta += curr.palien1;
 				}
 			}
@@ -375,16 +377,48 @@ public class bot1 {
 		}
 
 	}
+	
+	void initCrewProbs() {
+		ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
+		
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				cell curr = board.board[i][j];
+				
+				// if closed cell
+				if (!curr.state) {
+					curr.pcrew1 = 0;
+				
+				// if bot position
+				// TODO change to bot range calculation
+				} else if (i == x && j == y) {
+					curr.pcrew1 = 0;
+				
+				// open cell not in bot range
+				} else {
+					cells.add(curr);
+				}
+			}
+		}
+		
+		// divide probability equally amongst valid cells
+		for (cell curr : cells) {
+			curr.pcrew1 = 1.0 / cells.size();
+		}
+	}
 
 	// sets off crewmember detection beep
 	boolean beep() {
-
 		return false;
 	}
 
 	// calculate crewmember probabilities
-	void probabilityCrewmate() {
+	void crewmateProbability() {
 		// if the bot gets a beep
+		if(debug == 1) {
+			System.out.println("Updating crew probabilities");
+		}
+		
 		if (beep()) {
 			board.board[x][y].pcrew1 = 0;
 			for (int i = 0; i < board.board.length; i++) {
@@ -394,9 +428,12 @@ public class bot1 {
 				}
 			}
 
-			// if the bot does not get a beep
+		// if the bot does not get a beep
 		} else {
+			// set current bot position probability to 0
 			board.board[x][y].pcrew1 = 0;
+			
+			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
@@ -407,10 +444,10 @@ public class bot1 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					curr.palien1 = (1.0 / beta) * curr.pcrew1;
+					curr.pcrew1 = (1.0 / beta) * curr.pcrew1;
 				}
 			}
-
+			
 		}
 
 	}
@@ -450,6 +487,9 @@ public class bot1 {
 			// update alien probabilities
 			botMoveAlienProbability();
 			
+			// update crewmember probabilities
+			crewmateProbability();
+			
 			if (debug==1) {
 				printBoard();
 				System.out.println();
@@ -472,6 +512,7 @@ public class bot1 {
 				while (x == crewmember.x && y == crewmember.y) {
 					crewmember.generateCrewmember();
 				}
+				initCrewProbs();
 			}
 
 			// move aliens
@@ -507,40 +548,40 @@ public class bot1 {
 				cell curr = board.board[i][j];
 
 				if (curr.state == false) {
-					System.out.print("[XXX, " + df.format(curr.palien1) + "]  ");
+					System.out.print("[XXX, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 					continue;
 				}
 
 				if (curr.alien == false) {
 					if ((i == x && j == y) && (i == crewmember.x && j == crewmember.y)) {
-						System.out.print("[_BC, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[_BC, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
 					if (i == x && j == y) {
-						System.out.print("[_B_, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[_B_, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
 					if (i == crewmember.x && j == crewmember.y) {
-						System.out.print("[__C, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[__C, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
-					System.out.print("[OOO, " + df.format(curr.palien1) + "]  ");
+					System.out.print("[OOO, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 					continue;
 
 				} else {
 					if ((i == x && j == y) && i == crewmember.x && j == crewmember.y) {
-						System.out.print("[ABC, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[ABC, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
 					if (i == x && j == y) {
-						System.out.print("[AB_, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[AB_, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
 					if (i == crewmember.x && j == crewmember.y) {
-						System.out.print("[A_C, " + df.format(curr.palien1) + "]  ");
+						System.out.print("[A_C, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 						continue;
 					}
-					System.out.print("[A__, " + df.format(curr.palien1) + "]  ");
+					System.out.print("[A__, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
 					continue;
 				}
 			}
