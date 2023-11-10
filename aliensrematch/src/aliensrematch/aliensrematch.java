@@ -9,7 +9,7 @@ public class aliensrematch {
 	public static void main(String[] args) {
 		System.out.println("running");
 
-		bot1 bot1 = new bot1(1,2);
+		bot1 bot1 = new bot1(1,0.5);
 		int[] ret1 = new int[2];
 		ret1 = bot1.run();
 		

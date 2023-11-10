@@ -1,12 +1,90 @@
 package aliensrematch;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class board {
-	int d;   // dimensions of the board
-	cell[][] board;   //2D array of cells. this is the board.
+	int d; // dimensions of the board
+	cell[][] board; // 2D array of cells. this is the board.
 	int open = 0;
 
+	HashMap<String, Integer> dict = new HashMap<>();
+
+	
+
+	public void dijkstra() {
+		for (cell[] cells : board) {
+			for (cell cell : cells) {
+				if (cell.state) {
+					Queue<cell> queue = new LinkedList<cell>();
+					ArrayList<cell> visited = new ArrayList<cell>();
+
+					// add our current cell to the fringe
+					queue.add(cell);
+					String string1= Integer.toString(cell.x)+ Integer.toString(cell.y)+ Integer.toString(cell.x)+ Integer.toString(cell.y);
+					dict.put(string1, 0);
+					cell.parent=cell;
+					
+					while (!queue.isEmpty()) {
+						// check if we are at the crewmate
+						cell curr = queue.poll();
+						
+						String current= Integer.toString(cell.x)+ Integer.toString(cell.y)+ Integer.toString(curr.x)+ Integer.toString(curr.y);
+					
+						String parent= Integer.toString(cell.x)+ Integer.toString(cell.y)+ Integer.toString(curr.parent.x)+ Integer.toString(curr.parent.y);
+						
+						int parentDistance = dict.get(parent);
+						int currentDistance = 0;
+						if (dict.containsKey(current) && (dict.get(current) > parentDistance + 1)) {
+							currentDistance=parentDistance+1;
+						}else if(dict.containsKey(current) && (dict.get(current) < parentDistance + 1)) {
+							currentDistance= dict.get(current);
+						}else {
+							currentDistance=parentDistance+1;
+						}
+						dict.put(current, currentDistance);
+						// add neighbors to fringe if they are valid and not already visited
+						if ((!queue.contains(curr.up)) && (curr.up != null) && (!visited.contains(curr.up))&&curr.up.state) {
+							queue.add(curr.up);
+
+							curr.up.parent = curr;
+						}
+						if ((!queue.contains(curr.down)) && (curr.down != null) && (!visited.contains(curr.down))&& curr.down.state) {
+							queue.add(curr.down);
+
+							curr.down.parent = curr;
+						}
+						if ((!queue.contains(curr.left)) && (curr.left != null) && (!visited.contains(curr.left))&&curr.left.state) {
+							queue.add(curr.left);
+
+							curr.left.parent = curr;
+						}
+						if ((!queue.contains(curr.right)) && (curr.right != null) && (!visited.contains(curr.right))&&curr.right.state) {
+							queue.add(curr.right);
+							curr.right.parent = curr;
+						}
+						// add current node to the visited fringe
+						visited.add(curr);
+
+					}
+
+				}
+			}
+		}
+		wipeParents();
+	}
+	
+	void wipeParents() {
+		for (cell[] cellr : board) {
+			for (cell cell : cellr) {
+				cell.parent = null;
+			}
+		}
+	}
 	public board(int d) {
 		this.d = d;
 		board = new cell[d][d];
@@ -31,6 +109,7 @@ public class board {
 				}
 			}
 		}
+	
 
 		// generating pathways
 		ArrayList<cell> fringe = new ArrayList<cell>(); // cells to open
@@ -45,7 +124,8 @@ public class board {
 
 		while (!fringe.isEmpty()) {
 			// pick random cell from fringe to continue
-			// make sure its other neighbors have not been opened since it was added to the fringe
+			// make sure its other neighbors have not been opened since it was added to the
+			// fringe
 			curr = fringe.remove((int) (Math.random() * fringe.size()));
 			while (curr.neighbor_ct > 1) {
 				if (fringe.isEmpty()) {
@@ -54,7 +134,7 @@ public class board {
 					curr = fringe.remove((int) (Math.random() * fringe.size()));
 				}
 			}
-			
+
 			// open the cell
 			curr.state = true;
 			open++;
@@ -103,11 +183,20 @@ public class board {
 				de.randomNeighbor().state = true;
 			}
 		}
+		
+		dijkstra();
+		
+		/*for(String array: dict.keySet()) {
+			System.out.println("Cell1 x: "+ array.charAt(0));
+			System.out.println("Cell1 y: "+ array.charAt(1));
+			System.out.println("Cell2 x: "+ array.charAt(2));
+			System.out.println("Cell2 y: "+ array.charAt(3));
+			System.out.println("Distance between them: "+ dict.get(array)+"\n");
+			
+		}*/
 
 	}
 
-	
-	
 	// returns a random cell that is not closed
 	// used to spawn location for alien, bot, crewmember
 	cell randomCell() {
@@ -124,8 +213,6 @@ public class board {
 		return board[x][y];
 	}
 
-	
-	
 	// returns cell at given position
 	cell getCell(int x, int y) {
 		return board[x][y];
