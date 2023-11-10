@@ -10,6 +10,7 @@ public class bot1 {
 	board board; // board that the bot is on
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
+	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
@@ -19,7 +20,7 @@ public class bot1 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(10);
+		board = new board(20);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -60,6 +61,11 @@ public class bot1 {
 
 		// initialize crew probabilities
 		initCrewProbs();
+		
+		dest = board.randomCell();
+		while (dest.x == x && dest.y == y) {
+			dest = board.randomCell();
+		}
 	}
 
 
@@ -105,27 +111,15 @@ public class bot1 {
 		ArrayList<cell> possCells = new ArrayList<>();
 		if (curr.up!=null && curr.up.state && curr.up.palien1 == 0) {
 			possCells.add(curr.up);
-			if (debug == 1) {
-				System.out.println("adding up");
-			}
 		}
 		if (curr.down!=null && curr.down.state && curr.down.palien1 == 0) {
 			possCells.add(curr.down);
-			if (debug == 1) {
-				System.out.println("adding down");
-			}
 		}
 		if (curr.left!=null && curr.left.state && curr.left.palien1 == 0) {
 			possCells.add(curr.left);
-			if (debug == 1) {
-				System.out.println("adding left");
-			}
 		}
 		if (curr.right!=null && curr.right.state && curr.right.palien1 == 0) {
 			possCells.add(curr.right);
-			if (debug == 1) {
-				System.out.println("adding right");
-			}
 		}
 
 
@@ -135,12 +129,13 @@ public class bot1 {
 		for(int i=0; i<possCells.size(); i++) {
 			key = createKey(possCells.get(i).x,possCells.get(i).y, dest.x, dest.y);
 			if (minDistance > board.dict.get(key)) {
-				if (debug == 1) {
-					System.out.println(possCells.get(i).x+" "+possCells.get(i).y+ " is shortest");
-				}
 				ret = possCells.get(i);
 				minDistance = board.dict.get(key);
 			}
+		}
+		
+		if (debug == 1) {
+			System.out.println(ret.x+" "+ret.y+ " is next step");
 		}
 
 		path.push(ret);
@@ -573,7 +568,8 @@ public class bot1 {
 	cell findMaxCrew() {
 		// collect all cells with max probability
 		ArrayList<cell> max = new ArrayList<>();
-		max.add(board.board[0][0]);
+		max.add(dest);
+		boolean stay = true;
 
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
@@ -581,6 +577,7 @@ public class bot1 {
 				// if we find a cell that has a higher probability than the ones we are currently saving
 				// remove those old cells and add this one
 				if (max.get(0).pcrew1 < curr.pcrew1) {
+					stay = false;
 					max.removeAll(max);
 					max.add(curr);
 					// if we find a cell that has the same probability as the ones we are currently saving
@@ -590,6 +587,10 @@ public class bot1 {
 				}
 				// nothing if this cell has a lower probability
 			}
+		}
+		
+		if (stay == true) {
+			return dest;
 		}
 
 		// return a random cell from our list
@@ -644,9 +645,6 @@ public class bot1 {
 			// update alien probabilities
 			botMoveAlienProbability();
 
-			// update crewmember probabilities
-			crewmateProbability();
-
 			if (debug == 1) {
 				printBoard();
 				System.out.println();
@@ -674,6 +672,9 @@ public class bot1 {
 			alien.move();
 
 			alienMoveAlienProbability();
+
+			// update crewmember probabilities
+			crewmateProbability();
 
 			// alien check
 			if (board.getCell(x, y).alien == true) {
