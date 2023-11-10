@@ -12,7 +12,6 @@ public class bot1 {
 	crewmember crewmember; // crewmember to save
 	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
-	int ct = 0;
 
 	public bot1(int k, double alpha) {
 		// initialize k and alpha values
@@ -142,10 +141,6 @@ public class bot1 {
 				ret = possCells.get(i);
 				minDistance = board.dict.get(key);
 			}
-		}
-
-		if (ret == curr) {
-			ct++;
 		}
 
 		path.push(ret);
