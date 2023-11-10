@@ -3,7 +3,7 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
-public class bot1 {
+public class bot2 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
 	double alpha; // sensitivity of crewmember scanner
@@ -11,16 +11,16 @@ public class bot1 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
-	public bot1(int k, double alpha) {
+	public bot2(int k, double alpha) {
 		// initialize k and alpha values
 		this.k = k;
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(20, false);
+		board = new board(50, true);
 
 		// random placement of bot
 		cell curr = board.randomCell();

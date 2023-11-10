@@ -15,6 +15,7 @@ public class aliensrematch {
 		ret1 = bot1.run();
 		*/
 		
+		
 		bot2 bot2 = new bot2(10,0.5);
 		int[] ret = new int[2];
 		ret = bot2.run();
