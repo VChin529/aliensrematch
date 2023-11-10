@@ -3,23 +3,21 @@ package aliensrematch;
 public class crewmember {
 	int x,y;   // coordinates
 	board board;   // board that the crewmember is on
-	
+
 	public crewmember(board b) {
 		board = b;
-		
+
 		// put crewmember in a random cell
 		// update coords
 		cell curr = board.randomCell();
 		this.x = curr.x;
 		this.y = curr.y;
 	}
-	
-	
-	
-	// puts ("new") crewmember at a random position on the board
-	// to be used when crewmember is saved and we want a new one
-	// technically the same object
-	// but didn't want to waste time initializing a new one
+
+
+
+	// puts crewmember at a random position on the board
+	// to be used when finding intial position for crewmember- must not be in bot cell
 	public void generateCrewmember () {
 		cell curr = board.randomCell();
 		x = curr.x;

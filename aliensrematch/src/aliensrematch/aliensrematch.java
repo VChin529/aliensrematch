@@ -14,9 +14,9 @@ public class aliensrematch {
 		ret1 = bot1.run();
 		
 		
-		System.out.println("Bot 1 Steps:");
+		System.out.println("Bot 1 Saved:");
 		System.out.println(ret1[0]);
-		System.out.println("Bot 1 Saved Crewmate:");
+		System.out.println("Bot 1 Steps:");
 		System.out.println(ret1[1]);
 	}
 
