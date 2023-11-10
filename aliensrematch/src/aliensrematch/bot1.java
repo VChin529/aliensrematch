@@ -19,7 +19,7 @@ public class bot1 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(10);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -36,8 +36,8 @@ public class bot1 {
 		// initialize alien probabilities
 		double scanSize = scanRadiusBlocks(); // keeps track of how many open cells are in alien scan zone
 		System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
-		for (int i = 0; i < 5; i++) {
-			for (int j = 0; j < 5; j++) {
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
 				cell c = board.board[i][j];
 				if (!c.state) { // closed cell
 					c.palien1 = 0;
@@ -58,7 +58,6 @@ public class bot1 {
 
 		// initialize crew probabilities
 		initCrewProbs();
-		printBoard();
 	}
 
 	// checks if bot position is crewmember position
@@ -66,65 +65,81 @@ public class bot1 {
 		return board.board[x][y] == board.board[crewmember.x][crewmember.y];
 	}
 
+	// finds cell with highest crewmate probability
+	cell findMaxCrew() {
+		ArrayList<cell> max = new ArrayList<>();
+		max.add(board.board[0][0]);
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				if (max.get(0).pcrew1 < board.board[i][j].pcrew1) {
+					max.removeAll(max);
+					max.add(board.board[i][j]);
+				} else if (max.get(0).pcrew1 == board.board[i][j].pcrew1) {
+					max.add(board.board[i][j]);
+				}
+			}
+
+		}
+		int pos = (int) (Math.random() * max.size());
+		return max.get(pos);
+	}
+
 	// BFS to return the shortest path
 	// ignore is for the situation where aliens are blocking by the path (per the TA
 	// in zulip)
+	// find max probabilty of crewmate
+	// we cant move into an alien
 	Stack<cell> findPath(boolean ignore) {
 		// create fringes
-		Queue<cell> queue = new LinkedList<cell>();
-		ArrayList<cell> visited = new ArrayList<cell>();
+		Stack<cell> path = new Stack<>();
+		cell dest = findMaxCrew();
 
-		// add our current cell to the fringe
-		queue.add(board.board[x][y]);
-		while (!queue.isEmpty()) {
-			// check if we are at the crewmate
-			cell curr = queue.poll();
-			if ((curr.x == crewmember.x) && curr.y == crewmember.y) {
-				return getPath();
-			}
+		cell curr = board.board[x][y];
+		String key = createKey(x, y, dest.x, dest.y);
 
-			// add neighbors to fringe if they are valid and not already visited
-			if ((!queue.contains(curr.up)) && (curr.up != null) && (!visited.contains(curr.up))
-					&& (curr.up.isValid(ignore))) {
-				queue.add(curr.up);
-
-				if (debugpath == 1) {
-					System.out.println("adding" + curr.up.x + " " + curr.up.y);
-				}
-				curr.up.parent = curr;
-			}
-			if ((!queue.contains(curr.down)) && (curr.down != null) && (!visited.contains(curr.down))
-					&& (curr.down.isValid(ignore))) {
-				queue.add(curr.down);
-				if (debugpath == 1) {
-					System.out.println("adding" + curr.down.x + " " + curr.down.y);
-				}
-				curr.down.parent = curr;
-			}
-			if ((!queue.contains(curr.left)) && (curr.left != null) && (!visited.contains(curr.left))
-					&& (curr.left.isValid(ignore))) {
-				queue.add(curr.left);
-				if (debugpath == 1) {
-					System.out.println("adding" + curr.left.x + " " + curr.left.y);
-				}
-				curr.left.parent = curr;
-			}
-			if ((!queue.contains(curr.right)) && (curr.right != null) && (!visited.contains(curr.right))
-					&& curr.right.isValid(ignore)) {
-				queue.add(curr.right);
-				if (debugpath == 1) {
-					System.out.println("adding" + curr.right.x + " " + curr.right.y);
-				}
-				curr.right.parent = curr;
-			}
-			// add current node to the visited fringe
-			visited.add(curr);
+		if (board.dict.get(key) == 0) {
+			path.push(curr);
+			return path;
+		}
+		System.out.println("Were pathing to: x" + dest.x+ " y:" + dest.y+ "With probability: "+ dest.pcrew1);
+		cell ret=curr;
+		int minDistance = Integer.MAX_VALUE;
+		ArrayList<cell> possCells = new ArrayList<>();
+		if (curr.up!=null&&curr.up.state && curr.up.palien1 == 0) {
+			possCells.add(curr.up);
+			System.out.println("adding up");
+		}
+		if (curr.down!=null&&curr.down.state && curr.down.palien1 == 0) {
+			possCells.add(curr.down);
+			System.out.println("adding down");
 
 		}
+		if (curr.left!=null&&curr.left.state && curr.left.palien1 == 0) {
+			possCells.add(curr.left);
+			System.out.println("adding left");
 
-		// we will only reach here if the aliens are blocking the path, thus run the
-		// algorithm again, this time ignoring the aliens
-		return findPath(true);
+		}
+		if (curr.right!=null&&curr.right.state && curr.right.palien1 == 0) {
+			possCells.add(curr.right);
+			System.out.println("adding right");
+		}
+		
+		for(int i=0; i<possCells.size(); i++) {
+			key = createKey(possCells.get(i).x,possCells.get(i).y, dest.x, dest.y);
+			if (minDistance > board.dict.get(key)) {
+				System.out.println(possCells.get(i).x+" "+possCells.get(i).y+ " is shortest");
+				ret = possCells.get(i);
+				minDistance = board.dict.get(key);
+			}
+		}
+		
+		path.push(ret);
+		return path;
+
+	}
+
+	String createKey(int x1, int y1, int x2, int y2) {
+		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
 	}
 
 	// trace back parent pointers to return the shortest path as a stack
@@ -445,9 +460,7 @@ public class bot1 {
 	// calculate crewmember probabilities
 	void crewmateProbability() {
 		// if the bot gets a beep
-		if (debug == 1) {
-			System.out.println("Updating crew probabilities");
-		}
+	
 		int crewx = crewmember.x;
 		int crewy = crewmember.y;
 		if (crewx == x && crewy == y) {
@@ -472,18 +485,17 @@ public class bot1 {
 					// TODO add distance as a dictionary!?
 
 					if (board.board[i][j].state) {
-						String current = Integer.toString(i) + Integer.toString(j) + Integer.toString(crewx)
-								+ Integer.toString(crewy);
+						String current = Integer.toString(x) + Integer.toString(y) + Integer.toString(i)
+								+ Integer.toString(j);
 
 						int d = board.dict.get(current);
-
 						board.board[i][j].pcrew1 *= Math.pow(Math.E, -alpha * (d - 1));
 						beta += board.board[i][j].pcrew1;
 					}
 
 				}
 			}
-			
+
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -518,11 +530,11 @@ public class bot1 {
 	// run the bot
 	int[] run() {
 		int[] ret = new int[2];
-		int saved = 0; // # of crewmembers saved
+		 // # of crewmembers saved
 		int step = 0; // # of steps taken
-
+		int saved=0;
 		// go for 1000 steps
-		while (step < 1000) {
+		while(true){
 
 			if (debug == 1) {
 				printBoard();
@@ -534,8 +546,8 @@ public class bot1 {
 			Stack<cell> path = findPath(false);
 			if (path == null) {
 				System.out.println("Path could not be found");
-				ret[0] = saved;
-				ret[1] = step;
+				ret[0]=step;
+				ret[1]=saved;
 				return ret;
 			}
 
@@ -560,21 +572,19 @@ public class bot1 {
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
-				ret[0] = saved;
-				ret[1] = step;
+				ret[0]=step;
+				ret[1]=saved;
 				return ret;
+				
 			}
 
 			// crewmember check
 			// saved crewmember, generate another
 			// cannot be where the bot is
 			if (isDestination()) {
-				saved++;
-				crewmember.generateCrewmember();
-				while (x == crewmember.x && y == crewmember.y) {
-					crewmember.generateCrewmember();
-				}
-				initCrewProbs();
+				ret[0]=step;
+				ret[1]=1;
+				return ret;
 			}
 
 			// move aliens
@@ -584,8 +594,8 @@ public class bot1 {
 
 			// alien check
 			if (board.getCell(x, y).alien == true) {
-				ret[0] = saved;
-				ret[1] = step;
+				ret[0]=step;
+				ret[1]=saved;
 				return ret;
 			}
 
@@ -595,10 +605,6 @@ public class bot1 {
 
 		}
 
-		// completed 1000 steps without dying
-		ret[0] = saved;
-		ret[1] = step;
-		return ret;
 	}
 
 	// utility function
