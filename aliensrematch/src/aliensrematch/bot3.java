@@ -3,18 +3,18 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
-public class bot1 {
+public class bot3 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
 	double alpha; // sensitivity of crewmember scanner
 	board board; // board that the bot is on
 	alien alien; // array of aliens
-	crewmember crewmember; // crewmember to save
+	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
-	public bot1(int k, double alpha) {
+	public bot3(int k, double alpha) {
 		// initialize k and alpha values
 		this.k = k;
 		this.alpha = alpha;
@@ -54,17 +54,23 @@ public class bot1 {
 		}
 
 
-		// generate crewmember
+		// generate crewmembers
 		// if in the same position as bot, redo
-		crewmember = new crewmember(board);
-		while (x == crewmember.x && y == crewmember.y) {
-			crewmember.generateCrewmember();
+		crewmember1 = new crewmember(board);
+		while (x == crewmember1.x && y == crewmember1.y) {
+			crewmember1.generateCrewmember();
+		}
+
+		crewmember2 = new crewmember(board);
+		while ((x == crewmember2.x && y == crewmember2.y) || 
+				(crewmember1.x == crewmember2.x && crewmember1.y == crewmember2.y)) {
+			crewmember2.generateCrewmember();
 		}
 
 		// initialize crew probabilities
 		initCrewProbs();
-		
-		
+
+
 		// set destination cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
@@ -76,7 +82,8 @@ public class bot1 {
 
 	// checks if bot position is crewmember position
 	boolean isDestination() {
-		return board.board[x][y] == board.board[crewmember.x][crewmember.y];
+		return (crewmember1!= null && board.board[x][y] == board.board[crewmember1.x][crewmember1.y])
+				|| (crewmember2 != null && board.board[x][y] == board.board[crewmember2.x][crewmember2.y]);
 	}
 
 
@@ -137,7 +144,7 @@ public class bot1 {
 				minDistance = board.dict.get(key);
 			}
 		}
-		
+
 		if (debug == 1) {
 			System.out.println(ret.x+" "+ret.y+ " is next step");
 		}
@@ -475,13 +482,36 @@ public class bot1 {
 
 	// sets off crewmember detection beep
 	boolean beep() {
+		double prob = 0.0;
+		
 		// getting distance from our position to the crewmember
-		String current = createKey(x, y, crewmember.x, crewmember.y);
-		int d = board.dict.get(current);
-
-		// calculate probability of a beep
-		double prob = Math.pow(Math.E, (-alpha * (d - 1)));
-
+		if (crewmember1 != null && crewmember2 != null) {
+			// find the probability of beep from crewmember1 && crewmember2
+			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
+			int d1 = board.dict.get(current1);
+			double prob1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
+			
+			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
+			int d2 = board.dict.get(current2);
+			double prob2 = Math.pow(Math.E, (-alpha * (d2 - 1)));
+			
+			// final beep probability is from one OR the other
+			// 1 - and
+			prob = 1 - (prob1 * prob2);
+			
+			
+		} else if (crewmember1 != null){ //crewmember2 is null, we are looking for crew1
+			String current = createKey(x, y, crewmember1.x, crewmember1.y);
+			int d = board.dict.get(current);
+			prob = Math.pow(Math.E, (-alpha * (d - 1)));
+			
+			
+		} else { // crewmember1 is null, we are looking for crew2
+			String current = createKey(x, y, crewmember2.x, crewmember2.y);
+			int d = board.dict.get(current);
+			prob = Math.pow(Math.E, (-alpha * (d - 1)));
+		}
+		
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -492,17 +522,10 @@ public class bot1 {
 	// calculate crewmember probabilities
 	void crewmateProbability() {
 		// if we find the crewmember
-		if (crewmember.x == x && crewmember.y == y) {
-			for (int i = 0; i < board.board.length; i++) {
-				for (int j = 0; j < board.board.length; j++) {
-					if (crewmember.x == i && crewmember.y == j) {
-						board.board[i][j].pcrew = 1;
-					} else {
-						board.board[i][j].pcrew = 0;
-					}
-				}
-			}
-			return;
+		// there is now no crewmember in this cell, so p = 0
+		// continue on with recalculating probabilities
+		if (isDestination()) {
+			board.board[x][y].pcrew = 0.0;
 		}
 
 
@@ -574,7 +597,7 @@ public class bot1 {
 	// breaks ties at random
 	cell findMaxCrew() {
 		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
-		
+
 		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
@@ -597,8 +620,8 @@ public class bot1 {
 				// nothing if this cell has a lower probability
 			}
 		}
-		
-		
+
+
 		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;
@@ -623,6 +646,7 @@ public class bot1 {
 	// run the bot
 	int[] run() {
 		int[] ret = new int[2];
+		int saved = 0; // # of crewmembers saved
 		int step = 0; // # of steps taken
 
 
@@ -641,7 +665,7 @@ public class bot1 {
 			Stack<cell> path = findPath();
 			if (path == null) {
 				System.out.println("Path could not be found");
-				ret[0]=0;
+				ret[0]=saved;
 				ret[1]=step;
 				return ret;
 			}
@@ -665,20 +689,33 @@ public class bot1 {
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
-				ret[0]=0;
+				ret[0]=saved;
 				ret[1]=step;
 				return ret;
 
 			}
 
 			// crewmember check
-			// saved crewmember, end
+			// saved crewmember, increment saved count
+			// if we have saved both crewmembers, return
 			if (isDestination()) {
-				ret[0]=1;
-				ret[1]=step;
-				return ret;
+				saved++;
+				
+				if (saved == 2) {
+					ret[0]=saved;
+					ret[1]=step;
+					return ret;
+				}
+				
+				// turn off the crewmember we just saved
+				if (crewmember1 != null && x==crewmember1.x && y==crewmember1.y) {
+					crewmember1 = null;
+				} else {
+					crewmember2 = null;
+				}
 			}
 
+			
 			// move aliens
 			alien.move();
 
@@ -689,7 +726,7 @@ public class bot1 {
 
 			// alien check
 			if (board.getCell(x, y).alien == true) {
-				ret[0]=0;
+				ret[0]=saved;
 				ret[1]=step;
 				return ret;
 			}
@@ -715,7 +752,7 @@ public class bot1 {
 				}
 
 				if (curr.alien == false) {
-					if ((i == x && j == y) && (i == crewmember.x && j == crewmember.y)) {
+					if ((i == x && j == y) && ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y)||(crewmember2 != null && i == crewmember2.x && j == crewmember2.y))) {
 						System.out.print("[_BC, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
@@ -723,7 +760,7 @@ public class bot1 {
 						System.out.print("[_B_, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
-					if (i == crewmember.x && j == crewmember.y) {
+					if ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y)||(crewmember2 != null && i == crewmember2.x && j == crewmember2.y)) {
 						System.out.print("[__C, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
@@ -731,7 +768,7 @@ public class bot1 {
 					continue;
 
 				} else {
-					if ((i == x && j == y) && i == crewmember.x && j == crewmember.y) {
+					if ((i == x && j == y) && ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y) || (crewmember2 != null && i == crewmember2.x && j == crewmember2.y))) {
 						System.out.print("[ABC, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
@@ -739,7 +776,7 @@ public class bot1 {
 						System.out.print("[AB_, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
-					if (i == crewmember.x && j == crewmember.y) {
+					if ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y)||(crewmember2 != null && i == crewmember2.x && j == crewmember2.y)) {
 						System.out.print("[A_C, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}

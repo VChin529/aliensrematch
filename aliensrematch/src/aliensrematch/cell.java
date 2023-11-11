@@ -8,8 +8,7 @@ public class cell {
 	boolean alien;   // true = occupied, false = unoccupied
 	cell parent;   // to trace back path in BFS
 	// double h;   // calculate danger from aliens
-	double palien1, pcrew1;
-	//double palien2, pcrew2;
+	double palien, pcrew;
 
 	// default constructor
 	public cell() {}

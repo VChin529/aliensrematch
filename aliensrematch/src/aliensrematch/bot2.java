@@ -45,11 +45,11 @@ public class bot2 {
 			for (int j = 0; j < board.board.length; j++) {
 				cell c = board.board[i][j];
 				if (!c.state) { // closed cell
-					c.palien1 = 0;
+					c.palien = 0;
 				} else if (alienScanCoord(i, j)) { // in alien scan radar
-					c.palien1 = 0;
+					c.palien = 0;
 				} else { // equally distribute probability amongst other cells
-					c.palien1 = (1.0 / ((board.open) - scanSize));
+					c.palien = (1.0 / ((board.open) - scanSize));
 				}
 			}
 		}
@@ -66,7 +66,7 @@ public class bot2 {
 		initCrewProbs();
 		
 		
-		// set destinatin cell to a random position on the board
+		// set destination cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
 			dest = board.randomCell();
@@ -105,7 +105,7 @@ public class bot2 {
 
 
 		if (debug == 1) {
-			System.out.println("Were pathing to: x" + dest.x+ " y:" + dest.y+ " With probability: "+ dest.pcrew1);
+			System.out.println("Were pathing to: x" + dest.x+ " y:" + dest.y+ " With probability: "+ dest.pcrew);
 		}
 
 
@@ -114,16 +114,16 @@ public class bot2 {
 		// our unblocked neighbors without alien probability = 0
 		// if no cells meet these conditions, we return ourself, so we stay in place
 		ArrayList<cell> possCells = new ArrayList<>();
-		if (curr.up!=null && curr.up.state && curr.up.palien1 == 0) {
+		if (curr.up!=null && curr.up.state && curr.up.palien == 0) {
 			possCells.add(curr.up);
 		}
-		if (curr.down!=null && curr.down.state && curr.down.palien1 == 0) {
+		if (curr.down!=null && curr.down.state && curr.down.palien == 0) {
 			possCells.add(curr.down);
 		}
-		if (curr.left!=null && curr.left.state && curr.left.palien1 == 0) {
+		if (curr.left!=null && curr.left.state && curr.left.palien == 0) {
 			possCells.add(curr.left);
 		}
-		if (curr.right!=null && curr.right.state && curr.right.palien1 == 0) {
+		if (curr.right!=null && curr.right.state && curr.right.palien == 0) {
 			possCells.add(curr.right);
 		}
 
@@ -165,11 +165,11 @@ public class bot2 {
 		Stack<cell> path = new Stack<>();
 
 		// get current coordinates
-		int currx = crewmember.x;
-		int curry = crewmember.y;
+		int currx = dest.x;
+		int curry = dest.y;
 
 		// get parent of current node
-		cell next = board.board[crewmember.x][crewmember.y].parent;
+		cell next = board.board[dest.x][dest.y].parent;
 
 		do {
 			// add parent to stack
@@ -318,9 +318,9 @@ public class bot2 {
 					// alien must be in this area && open
 					if (alienScanCoord(i, j) && curr.state) {
 						cells.add(curr);
-						prob_square_total += curr.palien1;
+						prob_square_total += curr.palien;
 					} else { // everything else is 0
-						curr.palien1 = 0;
+						curr.palien = 0;
 					}
 				}
 			}
@@ -329,11 +329,11 @@ public class bot2 {
 				/*
 				 * System.out.println("cells list"); System.out.println("cell coords: " + curr.x
 				 * + ", " + curr.y); System.out.println("probability before division " +
-				 * curr.palien1 + " " + prob_square_total);
+				 * curr.palien + " " + prob_square_total);
 				 */
-				curr.palien1 *= 1.0 / prob_square_total;
-				// System.out.println("probability after division:" + curr.palien1);
-				beta += curr.palien1;
+				curr.palien *= 1.0 / prob_square_total;
+				// System.out.println("probability after division:" + curr.palien);
+				beta += curr.palien;
 			}
 
 			// scanner does not go off
@@ -343,9 +343,9 @@ public class bot2 {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					if (alienScanCoord(i, j)) {
-						curr.palien1 = 0;
+						curr.palien = 0;
 					}
-					beta += curr.palien1;
+					beta += curr.palien;
 				}
 			}
 		}
@@ -354,7 +354,7 @@ public class bot2 {
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
-				curr.palien1 = (1.0 / beta) * curr.palien1;
+				curr.palien = (1.0 / beta) * curr.palien;
 			}
 		}
 
@@ -372,7 +372,7 @@ public class bot2 {
 		double[][] probs = new double[board.board.length][board.board.length];
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
-				probs[i][j] = board.board[i][j].palien1;
+				probs[i][j] = board.board[i][j].palien;
 			}
 		}
 
@@ -384,27 +384,27 @@ public class bot2 {
 					cell curr = board.board[i][j];
 
 					if ((x==i && y==j) || !alienScanCoord(i,j)) {
-						curr.palien1 = 0;
+						curr.palien = 0;
 					} else if (curr.state){
-						curr.palien1 = 0;
+						curr.palien = 0;
 						cell n = curr.up;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i - 1][j] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i - 1][j] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.down;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i + 1][j] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i + 1][j] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.left;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i][j - 1] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i][j - 1] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.right;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i][j + 1] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i][j + 1] * (1.0 / n.neighbor_ct);
 						}
 					}
-					beta += curr.palien1;
+					beta += curr.palien;
 				}
 			}
 
@@ -414,27 +414,27 @@ public class bot2 {
 					cell curr = board.board[i][j];
 
 					if ((x==i && y==j) || alienScanCoord(i,j)) {
-						curr.palien1 = 0;
+						curr.palien = 0;
 					} else if (curr.state){
-						curr.palien1 = 0;
+						curr.palien = 0;
 						cell n = curr.up;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i - 1][j] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i - 1][j] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.down;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i + 1][j] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i + 1][j] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.left;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i][j - 1] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i][j - 1] * (1.0 / n.neighbor_ct);
 						}
 						n = curr.right;
 						if (n != null && n.state && n.neighbor_ct != 0) {
-							curr.palien1 += probs[i][j + 1] * (1.0 / n.neighbor_ct);
+							curr.palien += probs[i][j + 1] * (1.0 / n.neighbor_ct);
 						}
 					}
-					beta += curr.palien1;
+					beta += curr.palien;
 				}
 			}
 		}
@@ -444,7 +444,7 @@ public class bot2 {
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
-				curr.palien1 = (1.0 / beta) * curr.palien1;
+				curr.palien = (1.0 / beta) * curr.palien;
 			}
 		}
 
@@ -462,11 +462,11 @@ public class bot2 {
 
 				// if closed cell
 				if (!curr.state) {
-					curr.pcrew1 = 0;
+					curr.pcrew = 0;
 
 					// if bot position
 				} else if (i == x && j == y) {
-					curr.pcrew1 = 0;
+					curr.pcrew = 0;
 
 					// open cell not in bot position
 					// this is a valid cell. collect these
@@ -478,7 +478,7 @@ public class bot2 {
 
 		// divide probability equally amongst valid cells
 		for (cell curr : cells) {
-			curr.pcrew1 = 1.0 / cells.size();
+			curr.pcrew = 1.0 / cells.size();
 		}
 	}
 
@@ -507,9 +507,9 @@ public class bot2 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					if (crewmember.x == i && crewmember.y == j) {
-						board.board[i][j].pcrew1 = 1;
+						board.board[i][j].pcrew = 1;
 					} else {
-						board.board[i][j].pcrew1 = 0;
+						board.board[i][j].pcrew = 0;
 					}
 				}
 			}
@@ -524,7 +524,7 @@ public class bot2 {
 			}
 
 			// set current bot position probability to 0
-			board.board[x][y].pcrew1 = 0;
+			board.board[x][y].pcrew = 0;
 
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
@@ -537,8 +537,8 @@ public class bot2 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						curr.pcrew1 *= Math.pow(Math.E, -alpha * (d - 1));
-						beta += curr.pcrew1;
+						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
+						beta += curr.pcrew;
 					}
 
 				}
@@ -548,7 +548,7 @@ public class bot2 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					curr.pcrew1 = (1.0 / beta) * curr.pcrew1;
+					curr.pcrew = (1.0 / beta) * curr.pcrew;
 				}
 			}
 
@@ -557,20 +557,20 @@ public class bot2 {
 			// if the bot does not get a beep
 		} else {
 			// set current bot position probability to 0
-			board.board[x][y].pcrew1 = 0;
+			board.board[x][y].pcrew = 0;
 
 			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew1;
+					beta += board.board[i][j].pcrew;
 				}
 			}
 
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					curr.pcrew1 = (1.0 / beta) * curr.pcrew1;
+					curr.pcrew = (1.0 / beta) * curr.pcrew;
 				}
 			}
 
@@ -595,14 +595,14 @@ public class bot2 {
 				cell curr = board.board[i][j];
 				// if we find a cell that has a higher probability than the ones we are currently saving
 				// remove those old cells and add this one
-				if (max.get(0).pcrew1 < curr.pcrew1) {
+				if (max.get(0).pcrew < curr.pcrew) {
 					// we have found a better probability, so we are no longer pathing to the current destination cell
 					stay = false;
 					max.removeAll(max);
 					max.add(curr);
 					// if we find a cell that has the same probability as the ones we are currently saving
 					// ad this one
-				} else if (max.get(0).pcrew1 == curr.pcrew1) {
+				} else if (max.get(0).pcrew == curr.pcrew) {
 					max.add(curr);
 				}
 				// nothing if this cell has a lower probability
@@ -683,8 +683,7 @@ public class bot2 {
 			}
 
 			// crewmember check
-			// saved crewmember, generate another
-			// cannot be where the bot is
+			// saved crewmember, end
 			if (isDestination()) {
 				ret[0]=1;
 				ret[1]=step;
@@ -722,40 +721,40 @@ public class bot2 {
 				cell curr = board.board[i][j];
 
 				if (curr.state == false) {
-					System.out.print("[XXX, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+					System.out.print("[XXX, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 					continue;
 				}
 
 				if (curr.alien == false) {
 					if ((i == x && j == y) && (i == crewmember.x && j == crewmember.y)) {
-						System.out.print("[_BC, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[_BC, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
 					if (i == x && j == y) {
-						System.out.print("[_B_, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[_B_, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
 					if (i == crewmember.x && j == crewmember.y) {
-						System.out.print("[__C, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[__C, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
-					System.out.print("[OOO, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+					System.out.print("[OOO, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 					continue;
 
 				} else {
 					if ((i == x && j == y) && i == crewmember.x && j == crewmember.y) {
-						System.out.print("[ABC, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[ABC, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
 					if (i == x && j == y) {
-						System.out.print("[AB_, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[AB_, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
 					if (i == crewmember.x && j == crewmember.y) {
-						System.out.print("[A_C, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+						System.out.print("[A_C, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 						continue;
 					}
-					System.out.print("[A__, " + df.format(curr.palien1) + ", " + df.format(curr.pcrew1) + "]  ");
+					System.out.print("[A__, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 					continue;
 				}
 			}
