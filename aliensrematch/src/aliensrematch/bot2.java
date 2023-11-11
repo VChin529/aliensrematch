@@ -11,10 +11,9 @@ public class bot2 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int wander;  // 0 = center, 1 = quadrant with max probability, 2 = off
-	double pswitch = 0.10;
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
+	int ct = 0;
 
 	public bot2(int k, double alpha) {
 		// initialize k and alpha values
@@ -39,7 +38,9 @@ public class bot2 {
 
 		// initialize alien probabilities
 		double scanSize = scanRadiusBlocks(); // keeps track of how many open cells are in alien scan zone
-		System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
+		if (debug == 1) {
+			System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
+		}
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell c = board.board[i][j];
@@ -64,12 +65,12 @@ public class bot2 {
 		// initialize crew probabilities
 		initCrewProbs();
 		
-		dest = board.board[board.board.length/2][board.board.length/2];
-		if (!dest.state) {
-			dest = dest.randomNeighbor();
-		}
 		
-		wander = 0;
+		// set destinatin cell to a random position on the board
+		dest = board.randomCell();
+		while (dest.x == x && dest.y == y) {
+			dest = board.randomCell();
+		}
 	}
 
 
@@ -98,9 +99,6 @@ public class bot2 {
 
 		// if we are at the position we want to go to, return our position
 		if (board.dict.get(key) == 0) {
-			if (x==board.board.length/2 && y==board.board.length/2) {
-				wander = 1;
-			}
 			path.push(curr);
 			return path;
 		}
@@ -132,12 +130,22 @@ public class bot2 {
 
 		// iterate through all possible cells
 		// find the one with the shortest distance
-		int minDistance = Integer.MAX_VALUE;
+		// go to that cell
+		int minDistance = board.dict.get(key);
 		for(int i=0; i<possCells.size(); i++) {
 			key = createKey(possCells.get(i).x,possCells.get(i).y, dest.x, dest.y);
-			if (minDistance > board.dict.get(key)) {
+			if (board.dict.get(key) < minDistance) {
 				ret = possCells.get(i);
 				minDistance = board.dict.get(key);
+			} else {
+				double d = (double) board.dict.get(key);
+				double prob = ((d+1)/d) -1;
+				if ((double)(Math.random()) < prob) {
+					ret = possCells.get(i);
+					minDistance = board.dict.get(key);
+					ct++;
+					break;
+				}
 			}
 		}
 		
@@ -147,7 +155,6 @@ public class bot2 {
 
 		path.push(ret);
 		return path;
-		
 
 	}
 
@@ -217,7 +224,9 @@ public class bot2 {
 
 		// counts number of cells
 		double count = 0;
-		System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
+		if (debug == 1) {
+			System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
+		}
 		for (int i = i_start; i <= i_end; i++) {
 			for (int j = j_start; j <= j_end; j++) {
 				if (board.board[i][j].state) {
@@ -573,9 +582,11 @@ public class bot2 {
 
 	// finds cell with highest crewmate probability
 	// this is the cell that we want to move to
+	// breaks ties at random
 	cell findMaxCrew() {
-		// collect all cells with max probability
-		ArrayList<cell> max = new ArrayList<>();
+		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
+		
+		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
 
@@ -585,6 +596,7 @@ public class bot2 {
 				// if we find a cell that has a higher probability than the ones we are currently saving
 				// remove those old cells and add this one
 				if (max.get(0).pcrew1 < curr.pcrew1) {
+					// we have found a better probability, so we are no longer pathing to the current destination cell
 					stay = false;
 					max.removeAll(max);
 					max.add(curr);
@@ -597,51 +609,16 @@ public class bot2 {
 			}
 		}
 		
-		if (wander == 3 || max.get(0).pcrew1 > pswitch) {
-			wander = 3;
-			if (stay == true) {
-				return dest;
-			}
-			// return a random cell from our list
-			int pos = (int) (Math.random() * max.size());
-			return max.get(pos);
-			
-		} else if (wander == 0) {
-			dest = board.board[board.board.length/2][board.board.length/2];
-			
-		} else if (wander == 1) {
-			double one = 0.0;
-			double two = 0.0;
-			double three = 0.0;
-			double four = 0.0;
-			for (int i = 0; i < board.board.length/4; i++) {
-				for (int j = 0; j < board.board.length/4; j++) {
-					one += board.board[i][j].pcrew1;
-					two += board.board[i][j + board.board.length/2].pcrew1;
-					three += board.board[i + board.board.length/2][j + board.board.length/2].pcrew1;
-					three += board.board[i + board.board.length/2][j].pcrew1;
-					
-				}
-			}
-			double maxQuadProb = Math.max(one, Math.max(two, Math.max(three, four)));
-			
-			if (maxQuadProb==one) {
-				dest = board.board[board.board.length/4][board.board.length/4];
-			} else if (maxQuadProb==two) {
-				dest = board.board[board.board.length/4][(board.board.length/2)+(board.board.length/4)];
-			} else if (maxQuadProb==three) {
-				dest = board.board[(board.board.length/2)+(board.board.length/4)][(board.board.length/2)+(board.board.length/4)];
-			} else {
-				dest = board.board[(board.board.length/2)+(board.board.length/4)][board.board.length/4];
-			}
-		}
 		
-		while (!dest.state) {
-			dest = dest.randomNeighbor();
+		// if we never found a better cell, keep going to our current destination cell
+		if (stay == true) {
+			return dest;
 		}
-			
-		return dest;
-		
+
+		// we have a better probability somewhere else
+		// return a random cell from our list
+		int pos = (int) (Math.random() * max.size());
+		return max.get(pos);
 	}
 
 

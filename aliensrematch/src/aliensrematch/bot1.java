@@ -37,7 +37,9 @@ public class bot1 {
 
 		// initialize alien probabilities
 		double scanSize = scanRadiusBlocks(); // keeps track of how many open cells are in alien scan zone
-		System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
+		if (debug == 1) {
+			System.out.println("Bot is at: x: " + curr.x + " y: " + curr.y + " size:" + scanSize);
+		}
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell c = board.board[i][j];
@@ -211,7 +213,9 @@ public class bot1 {
 
 		// counts number of cells
 		double count = 0;
-		System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
+		if (debug == 1) {
+			System.out.println("I start: " + i_start + " end: " + i_end + " J start: " + j_start + " end: " + j_end);
+		}
 		for (int i = i_start; i <= i_end; i++) {
 			for (int j = j_start; j <= j_end; j++) {
 				if (board.board[i][j].state) {
