@@ -62,6 +62,8 @@ public class bot1 {
 		// initialize crew probabilities
 		initCrewProbs();
 		
+		
+		// set destinatin cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
 			dest = board.randomCell();
@@ -565,9 +567,11 @@ public class bot1 {
 
 	// finds cell with highest crewmate probability
 	// this is the cell that we want to move to
+	// breaks ties at random
 	cell findMaxCrew() {
-		// collect all cells with max probability
-		ArrayList<cell> max = new ArrayList<>();
+		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
+		
+		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
 
@@ -577,6 +581,7 @@ public class bot1 {
 				// if we find a cell that has a higher probability than the ones we are currently saving
 				// remove those old cells and add this one
 				if (max.get(0).pcrew1 < curr.pcrew1) {
+					// we have found a better probability, so we are no longer pathing to the current destination cell
 					stay = false;
 					max.removeAll(max);
 					max.add(curr);
@@ -589,10 +594,13 @@ public class bot1 {
 			}
 		}
 		
+		
+		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;
 		}
 
+		// we have a better probability somewhere else
 		// return a random cell from our list
 		int pos = (int) (Math.random() * max.size());
 		return max.get(pos);
