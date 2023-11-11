@@ -36,6 +36,7 @@ public class aliensrematch {
 
 
 		// BOT3
+		/*
 		bot3 bot3 = new bot3(4,0.5);
 		int[] ret3 = new int[2];
 		ret3 = bot3.run();
@@ -44,8 +45,21 @@ public class aliensrematch {
 		System.out.println(ret3[0]);
 		System.out.println("Bot3 Steps:");
 		System.out.println(ret3[1]);
+		*/
+		
+		
+		// BOT6
+		bot6 bot6 = new bot6(1,0.5);
+		int[] ret6 = new int[2];
+		ret6 = bot6.run();
 
+		System.out.println("Bot6 Saved:");
+		System.out.println(ret6[0]);
+		System.out.println("Bot6 Steps:");
+		System.out.println(ret6[1]);
 
+		
+		
 		// TEST COMPARISON
 		/*
 		int saved1 = 0;
