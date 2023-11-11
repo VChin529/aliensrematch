@@ -15,8 +15,9 @@ public class aliensrematch {
 		int sumsteps2 = 0;
 		int sumct = 0;
 		
-		for (int i = 0; i < 100; i ++) {
-			bot1 bot1 = new bot1(5,0.5);
+		for (int i = 0; i < 10; i ++) {
+			System.out.println(i);
+			bot1 bot1 = new bot1(5,0.75);
 			int[] ret1 = new int[2];
 			ret1 = bot1.run();
 			
