@@ -3,6 +3,8 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
+// 1 crewmember 1 alien
+// simulated anealling
 public class bot2 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
@@ -563,7 +565,13 @@ public class bot2 {
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew;
+					cell curr = board.board[i][j];
+					if (curr.state) {
+						String current = createKey(x, y, i, j);
+						int d = board.dict.get(current);
+						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						beta += curr.pcrew;
+					}
 				}
 			}
 

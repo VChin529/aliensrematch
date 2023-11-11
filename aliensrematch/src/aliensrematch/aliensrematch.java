@@ -19,7 +19,8 @@ public class aliensrematch {
 		System.out.println(ret1[0]);
 		System.out.println("Bot1 Steps:");
 		System.out.println(ret1[1]);
-		 */
+		*/
+		 
 
 
 		// BOT2
@@ -49,6 +50,7 @@ public class aliensrematch {
 		
 		
 		// BOT6
+		
 		bot6 bot6 = new bot6(1,0.5);
 		int[] ret6 = new int[2];
 		ret6 = bot6.run();
@@ -57,6 +59,8 @@ public class aliensrematch {
 		System.out.println(ret6[0]);
 		System.out.println("Bot6 Steps:");
 		System.out.println(ret6[1]);
+		System.out.println(bot6.ct);
+		
 
 		
 		
@@ -68,14 +72,14 @@ public class aliensrematch {
 		int sumsteps2 = 0;
 		int sumct = 0;
 
-		for (int i = 0; i < 10; i ++) {
+		for (int i = 0; i < 30; i ++) {
 			System.out.println(i);
 			bot1 bot1 = new bot1(5,0.75);
 			int[] ret1 = new int[2];
 			ret1 = bot1.run();
 
 
-			bot2 bot2 = new bot2(2,0.5);
+			bot2 bot2 = new bot2(5,0.75);
 			int[] ret2 = new int[2];
 			ret2 = bot2.run();
 

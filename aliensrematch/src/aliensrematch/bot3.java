@@ -3,6 +3,9 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
+// 2 crewmembers 1 alien
+// beep is updated
+// but not probabilities
 public class bot3 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
@@ -481,6 +484,7 @@ public class bot3 {
 
 
 	// sets off crewmember detection beep
+	// beep depends on location of both crewmembers
 	boolean beep() {
 		double prob = 0.0;
 		
@@ -549,7 +553,7 @@ public class bot3 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
+						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
 						beta += curr.pcrew;
 					}
 
@@ -575,7 +579,13 @@ public class bot3 {
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew;
+					cell curr = board.board[i][j];
+					if (curr.state) {
+						String current = createKey(x, y, i, j);
+						int d = board.dict.get(current);
+						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						beta += curr.pcrew;
+					}
 				}
 			}
 

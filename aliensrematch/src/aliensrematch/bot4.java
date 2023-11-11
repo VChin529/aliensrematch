@@ -3,26 +3,27 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
-// 2 crewmembers 2 aliens
-// probabilities are not updated
-public class bot6 {
+
+// 2 crewmembers 1 alien
+// beep & probabilities are updated
+public class bot4 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
 	double alpha; // sensitivity of crewmember scanner
 	board board; // board that the bot is on
-	alien alien1, alien2; // array of aliens
+	alien alien; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
-	public bot6(int k, double alpha) {
+	public bot4(int k, double alpha) {
 		// initialize k and alpha values
 		this.k = k;
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(50);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -30,17 +31,11 @@ public class bot6 {
 		this.y = curr.y;
 
 
-		// generate 2 aliens not within bot scanner range
-		alien1 = new alien(board);
-		while (alienScanCoord(alien1.x, alien1.y)) {
-			board.board[alien1.x][alien1.y].alien = false;
-			alien1 = new alien(board);
-		}
-		
-		alien2 = new alien(board);
-		while ((alien2.x == alien1.x && alien2.y == alien1.y) || (alienScanCoord(alien2.x, alien2.y))) {
-			board.board[alien2.x][alien2.y].alien = false;
-			alien2 = new alien(board);
+		// generate 1 alien not within bot scanner range
+		alien = new alien(board);
+		while (alienScanCoord(alien.x, alien.y)) {
+			board.board[alien.x][alien.y].alien = false;
+			alien = new alien(board);
 		}
 
 		// initialize alien probabilities
@@ -294,7 +289,7 @@ public class bot6 {
 		// checks within these bounds for alien
 		for (int i = i_start; i <= i_end; i++) {
 			for (int j = j_start; j <= j_end; j++) {
-				if ((i == alien1.x && j == alien1.y) || (i == alien2.x && j == alien2.y)) {
+				if (i == alien.x && j == alien.y) {
 					return true;
 				}
 			}
@@ -314,9 +309,6 @@ public class bot6 {
 
 		// scanner goes off
 		if (alienScan()) {
-			if (debug == 1) {
-				System.out.println("SCANNER!");
-			}
 			ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
 			double prob_square_total = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
@@ -334,16 +326,14 @@ public class bot6 {
 
 			for (cell curr : cells) {
 				/*
-				 System.out.println("cells list"); System.out.println("cell coords: " + curr.x
-						 + ", " + curr.y); System.out.println("probability before division " +
-				 curr.palien + " " + prob_square_total);
+				 * System.out.println("cells list"); System.out.println("cell coords: " + curr.x
+				 * + ", " + curr.y); System.out.println("probability before division " +
+				 * curr.palien + " " + prob_square_total);
 				 */
-				 
 				curr.palien *= 1.0 / prob_square_total;
 				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
 			}
-			System.out.println(beta);
 
 			// scanner does not go off
 		} else {
@@ -388,16 +378,12 @@ public class bot6 {
 		double beta = 0.0; // to calculate normalization constant
 
 		if (alienScan()) {
-			if (debug == 1) {
-				System.out.println("SCANNER!");
-			}
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 
 					if ((x==i && y==j) || !alienScanCoord(i,j)) {
 						curr.palien = 0;
-						
 					} else if (curr.state){
 						curr.palien = 0;
 						cell n = curr.up;
@@ -420,7 +406,6 @@ public class bot6 {
 					beta += curr.palien;
 				}
 			}
-			System.out.println(beta);
 
 		} else {
 			for (int i = 0; i < board.board.length; i++) {
@@ -499,6 +484,7 @@ public class bot6 {
 
 
 	// sets off crewmember detection beep
+	// beep depends on location of both crewmembers
 	boolean beep() {
 		double prob = 0.0;
 		
@@ -567,7 +553,7 @@ public class bot6 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
+						curr.pcrew *= Math.pow((Math.pow(Math.E, (-alpha * (d - 1)))),2); // multiply by probability of both beeps
 						beta += curr.pcrew;
 					}
 
@@ -593,7 +579,13 @@ public class bot6 {
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew;
+					cell curr = board.board[i][j];
+					if (curr.state) {
+						String current = createKey(x, y, i, j);
+						int d = board.dict.get(current);
+						curr.pcrew *= (1 - (Math.pow((Math.pow(Math.E, (-alpha * (d - 1)))),2)));
+						beta += curr.pcrew;
+					}
 				}
 			}
 
@@ -734,15 +726,8 @@ public class bot6 {
 			}
 
 			
-			// move aliens randomly
-			int mv = (int)(Math.random() * 2);
-			if (mv == 0) {
-				alien1.move();
-				alien2.move();
-			} else {
-				alien2.move();
-				alien1.move();
-			}
+			// move aliens
+			alien.move();
 
 			alienMoveAlienProbability();
 

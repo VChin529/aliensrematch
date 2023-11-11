@@ -3,6 +3,7 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
+// 1 crewmember 1 alien
 public class bot1 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
@@ -11,7 +12,7 @@ public class bot1 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot1(int k, double alpha) {
@@ -63,8 +64,8 @@ public class bot1 {
 
 		// initialize crew probabilities
 		initCrewProbs();
-		
-		
+
+
 		// set destination cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
@@ -137,7 +138,7 @@ public class bot1 {
 				minDistance = board.dict.get(key);
 			}
 		}
-		
+
 		if (debug == 1) {
 			System.out.println(ret.x+" "+ret.y+ " is next step");
 		}
@@ -552,7 +553,13 @@ public class bot1 {
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew;
+					cell curr = board.board[i][j];
+					if (curr.state) {
+						String current = createKey(x, y, i, j);
+						int d = board.dict.get(current);
+						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						beta += curr.pcrew;
+					}
 				}
 			}
 
@@ -574,7 +581,7 @@ public class bot1 {
 	// breaks ties at random
 	cell findMaxCrew() {
 		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
-		
+
 		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
@@ -597,8 +604,8 @@ public class bot1 {
 				// nothing if this cell has a lower probability
 			}
 		}
-		
-		
+
+
 		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;

@@ -4,8 +4,8 @@ import java.util.*;
 import java.text.DecimalFormat;
 
 // 2 crewmembers 2 aliens
-// probabilities are not updated
-public class bot6 {
+// BANDAID FIX RN. REDO
+public class bot7 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
 	double alpha; // sensitivity of crewmember scanner
@@ -15,8 +15,9 @@ public class bot6 {
 	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
+	boolean ct = false;;
 
-	public bot6(int k, double alpha) {
+	public bot7(int k, double alpha) {
 		// initialize k and alpha values
 		this.k = k;
 		this.alpha = alpha;
@@ -317,6 +318,7 @@ public class bot6 {
 			if (debug == 1) {
 				System.out.println("SCANNER!");
 			}
+			
 			ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
 			double prob_square_total = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
@@ -331,19 +333,28 @@ public class bot6 {
 					}
 				}
 			}
+			
+			
+			if (prob_square_total == 0) {
+				return;
+			}
+			
 
 			for (cell curr : cells) {
 				/*
 				 System.out.println("cells list"); System.out.println("cell coords: " + curr.x
-						 + ", " + curr.y); System.out.println("probability before division " +
-				 curr.palien + " " + prob_square_total);
-				 */
+						 + ", " + curr.y);
+				 System.out.println("probability before division " +
+						 curr.palien + " " + prob_square_total);
+						 */
 				 
 				curr.palien *= 1.0 / prob_square_total;
 				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
 			}
-			System.out.println(beta);
+			if (beta == 0) {
+				return;
+			}
 
 			// scanner does not go off
 		} else {
@@ -351,10 +362,22 @@ public class bot6 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
+					if (!alienScanCoord(i, j)) {
+						beta += curr.palien;
+					}
+				}
+			}
+			
+			if (beta == 0) {
+				return;
+			}
+			
+			for (int i = 0; i < board.board.length; i++) {
+				for (int j = 0; j < board.board.length; j++) {
+					cell curr = board.board[i][j];
 					if (alienScanCoord(i, j)) {
 						curr.palien = 0;
 					}
-					beta += curr.palien;
 				}
 			}
 		}
@@ -420,7 +443,6 @@ public class bot6 {
 					beta += curr.palien;
 				}
 			}
-			System.out.println(beta);
 
 		} else {
 			for (int i = 0; i < board.board.length; i++) {
@@ -455,6 +477,10 @@ public class bot6 {
 
 
 		// normalize
+		if (beta == 0) {
+			return;
+		}
+		
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
@@ -593,7 +619,13 @@ public class bot6 {
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					beta += board.board[i][j].pcrew;
+					cell curr = board.board[i][j];
+					if (curr.state) {
+						String current = createKey(x, y, i, j);
+						int d = board.dict.get(current);
+						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						beta += curr.pcrew;
+					}
 				}
 			}
 
@@ -754,6 +786,10 @@ public class bot6 {
 				ret[0]=saved;
 				ret[1]=step;
 				return ret;
+			}
+			
+			if (board.board[alien1.x][alien1.y].palien == 0 || board.board[alien2.x][alien2.y].palien == 0) {
+				ct=true;
 			}
 
 		}
