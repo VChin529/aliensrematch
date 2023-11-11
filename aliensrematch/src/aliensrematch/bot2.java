@@ -11,6 +11,8 @@ public class bot2 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
+	int wander;  // 0 = center, 1 = quadrant with max probability, 2 = off
+	double pswitch = 0.10;
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
@@ -20,7 +22,7 @@ public class bot2 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(50, true);
+		board = new board(20);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -62,10 +64,12 @@ public class bot2 {
 		// initialize crew probabilities
 		initCrewProbs();
 		
-		dest = board.randomCell();
-		while (dest.x == x && dest.y == y) {
-			dest = board.randomCell();
+		dest = board.board[board.board.length/2][board.board.length/2];
+		if (!dest.state) {
+			dest = dest.randomNeighbor();
 		}
+		
+		wander = 0;
 	}
 
 
@@ -94,6 +98,9 @@ public class bot2 {
 
 		// if we are at the position we want to go to, return our position
 		if (board.dict.get(key) == 0) {
+			if (x==board.board.length/2 && y==board.board.length/2) {
+				wander = 1;
+			}
 			path.push(curr);
 			return path;
 		}
@@ -140,6 +147,7 @@ public class bot2 {
 
 		path.push(ret);
 		return path;
+		
 
 	}
 
@@ -589,13 +597,51 @@ public class bot2 {
 			}
 		}
 		
-		if (stay == true) {
-			return dest;
+		if (wander == 3 || max.get(0).pcrew1 > pswitch) {
+			wander = 3;
+			if (stay == true) {
+				return dest;
+			}
+			// return a random cell from our list
+			int pos = (int) (Math.random() * max.size());
+			return max.get(pos);
+			
+		} else if (wander == 0) {
+			dest = board.board[board.board.length/2][board.board.length/2];
+			
+		} else if (wander == 1) {
+			double one = 0.0;
+			double two = 0.0;
+			double three = 0.0;
+			double four = 0.0;
+			for (int i = 0; i < board.board.length/4; i++) {
+				for (int j = 0; j < board.board.length/4; j++) {
+					one += board.board[i][j].pcrew1;
+					two += board.board[i][j + board.board.length/2].pcrew1;
+					three += board.board[i + board.board.length/2][j + board.board.length/2].pcrew1;
+					three += board.board[i + board.board.length/2][j].pcrew1;
+					
+				}
+			}
+			double maxQuadProb = Math.max(one, Math.max(two, Math.max(three, four)));
+			
+			if (maxQuadProb==one) {
+				dest = board.board[board.board.length/4][board.board.length/4];
+			} else if (maxQuadProb==two) {
+				dest = board.board[board.board.length/4][(board.board.length/2)+(board.board.length/4)];
+			} else if (maxQuadProb==three) {
+				dest = board.board[(board.board.length/2)+(board.board.length/4)][(board.board.length/2)+(board.board.length/4)];
+			} else {
+				dest = board.board[(board.board.length/2)+(board.board.length/4)][board.board.length/4];
+			}
 		}
-
-		// return a random cell from our list
-		int pos = (int) (Math.random() * max.size());
-		return max.get(pos);
+		
+		while (!dest.state) {
+			dest = dest.randomNeighbor();
+		}
+			
+		return dest;
+		
 	}
 
 

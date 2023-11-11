@@ -11,7 +11,7 @@ public class bot1 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot1(int k, double alpha) {
@@ -20,7 +20,7 @@ public class bot1 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(20, false);
+		board = new board(20);
 
 		// random placement of bot
 		cell curr = board.randomCell();
