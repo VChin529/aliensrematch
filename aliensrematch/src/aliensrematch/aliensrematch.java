@@ -75,12 +75,12 @@ public class aliensrematch {
 		  int saved3 = 0; int saved4 = 0; int sumsteps3 = 0; int sumsteps4 = 0; int
 		  sumct = 0; int saved5=0; int sumsteps5=0; 
 		  
-		  for (int i = 0; i < 5; i ++) { System.out.println(i); bot3 bot3 = new
-		  bot3(5,0.75); int[] ret3 = new int[2]; ret3 = bot3.run();
+		  for (int i = 0; i < 40; i ++) { System.out.println(i); bot3 bot3 = new
+		  bot3(5,0.5); int[] ret3 = new int[2]; ret3 = bot3.run();
 		  
 		  
-		  bot4 bot4 = new bot4(5,0.75); int[] ret4 = new int[2]; ret4 = bot4.run();
-		  bot5 bot5 = new bot5(5,0.75); int[] ret5 = new int[2]; ret5 = bot5.run();
+		  bot4 bot4 = new bot4(5,0.5); int[] ret4 = new int[2]; ret4 = bot4.run();
+		  bot5 bot5 = new bot5(5,0.5); int[] ret5 = new int[2]; ret5 = bot5.run();
 		  saved3 += ret3[0]; saved4 += ret4[0]; sumsteps3 += ret3[1]; sumsteps4 +=
 		  ret4[1]; saved5+=ret5[0]; sumsteps5+=ret5[1];
 		  
