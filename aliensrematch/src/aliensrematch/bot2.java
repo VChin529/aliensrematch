@@ -493,8 +493,8 @@ public class bot2 {
 		int d = board.dict.get(current);
 
 		// calculate probability of a beep
-		double prob = Math.pow(Math.E, (-alpha * (d - 1)));
-
+		double prob = 1.0-(Math.pow(Math.E, (-alpha * (d - 1))));
+		prob= 1-prob;
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -539,7 +539,9 @@ public class bot2 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
+						if(d!=0) {
 						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
+						}
 						beta += curr.pcrew;
 					}
 
@@ -569,7 +571,9 @@ public class bot2 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
+						if(d!=0) {
 						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						}
 						beta += curr.pcrew;
 					}
 				}

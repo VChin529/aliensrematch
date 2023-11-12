@@ -493,11 +493,11 @@ public class bot3 {
 			// find the probability of beep from crewmember1 && crewmember2
 			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
-			double prob1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
+			double prob1 = 1.0-(Math.pow(Math.E, (-alpha * (d1 - 1))));
 			
 			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
-			double prob2 = Math.pow(Math.E, (-alpha * (d2 - 1)));
+			double prob2 = 1.0-(Math.pow(Math.E, (-alpha * (d2 - 1))));
 			
 			// final beep probability is from one OR the other
 			// 1 - and
@@ -507,13 +507,13 @@ public class bot3 {
 		} else if (crewmember1 != null){ //crewmember2 is null, we are looking for crew1
 			String current = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
-			prob = Math.pow(Math.E, (-alpha * (d - 1)));
+			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 			
 			
 		} else { // crewmember1 is null, we are looking for crew2
 			String current = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
-			prob = Math.pow(Math.E, (-alpha * (d - 1)));
+			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		}
 		
 		// return if random number is within this probability
@@ -553,7 +553,11 @@ public class bot3 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
+						if(curr.pcrew==0) {
+							curr.pcrew=0;
+						}else if(d!=0) {
 						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
+						}
 						beta += curr.pcrew;
 					}
 
@@ -583,7 +587,9 @@ public class bot3 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
+						if(d!=0) {
 						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						}
 						beta += curr.pcrew;
 					}
 				}

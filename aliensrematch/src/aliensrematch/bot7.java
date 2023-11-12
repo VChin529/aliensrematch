@@ -15,7 +15,7 @@ public class bot7 {
 	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
-	boolean ct = false;;
+	boolean ct = false;
 
 	public bot7(int k, double alpha) {
 		// initialize k and alpha values

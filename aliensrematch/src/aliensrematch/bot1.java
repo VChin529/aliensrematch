@@ -481,8 +481,7 @@ public class bot1 {
 		int d = board.dict.get(current);
 
 		// calculate probability of a beep
-		double prob = Math.pow(Math.E, (-alpha * (d - 1)));
-
+		double prob = ((Math.pow(Math.E, ((-alpha) * (d - 1)))));
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -527,7 +526,9 @@ public class bot1 {
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
+						if(d!=0) {
+						curr.pcrew *= Math.pow(Math.E, (-alpha) * (d - 1));
+						}
 						beta += curr.pcrew;
 					}
 
@@ -557,7 +558,9 @@ public class bot1 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
-						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						if(d!=0) {
+						curr.pcrew *= (1 - Math.pow(Math.E, (-alpha) * (d - 1)));
+						}
 						beta += curr.pcrew;
 					}
 				}
@@ -598,7 +601,7 @@ public class bot1 {
 					max.add(curr);
 					// if we find a cell that has the same probability as the ones we are currently saving
 					// ad this one
-				} else if (max.get(0).pcrew == curr.pcrew) {
+				} else if (Double.compare(max.get(0).pcrew,(curr.pcrew))==0) {
 					max.add(curr);
 				}
 				// nothing if this cell has a lower probability
