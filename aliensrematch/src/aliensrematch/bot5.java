@@ -3,9 +3,9 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
-
 // 2 crewmembers 1 alien
-// beep & probabilities are updated
+// beep is updated
+// but not probabilities
 public class bot5 {
 	int x, y; // coordinates
 	int k; // dimension of alien scanner radius
@@ -16,7 +16,6 @@ public class bot5 {
 	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
-	int ct = 0;
 
 	public bot5(int k, double alpha) {
 		// initialize k and alpha values
@@ -140,31 +139,25 @@ public class bot5 {
 
 		// iterate through all possible cells
 		// find the one with the shortest distance
+		// go to that cell
 		int minDistance = board.dict.get(key);
 		for(int i=0; i<possCells.size(); i++) {
 			key = createKey(possCells.get(i).x,possCells.get(i).y, dest.x, dest.y);
 			if (board.dict.get(key) < minDistance) {
 				ret = possCells.get(i);
 				minDistance = board.dict.get(key);
-			} else {
-				double d = (double) board.dict.get(key);
-				double prob = ((d+1)/d) -1;
-				if ((double)(Math.random()) < prob) {
-					ret = possCells.get(i);
-					minDistance = board.dict.get(key);
-					ct++;
-					break;
-				}
 			}
 		}
-		
+
 		if (debug == 1) {
 			System.out.println(ret.x+" "+ret.y+ " is next step");
 		}
+
 		path.push(ret);
 		return path;
 
 	}
+
 
 
 
@@ -496,35 +489,35 @@ public class bot5 {
 	// beep depends on location of both crewmembers
 	boolean beep() {
 		double prob = 0.0;
-		
+
 		// getting distance from our position to the crewmember
 		if (crewmember1 != null && crewmember2 != null) {
 			// find the probability of beep from crewmember1 && crewmember2
 			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
-			double prob1 = ((1.0-Math.pow(Math.E, (-alpha * (d1 - 1)))));
-			
+			double prob1 = 1.0-(Math.pow(Math.E, (-alpha * (d1 - 1))));
+
 			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
-			double prob2 = (1.0-(Math.pow(Math.E, (-alpha * (d2 - 1)))));
-			
+			double prob2 = 1.0-(Math.pow(Math.E, (-alpha * (d2 - 1))));
+
 			// final beep probability is from one OR the other
 			// 1 - and
-			prob = 1.0 - (prob1 * prob2);
-			
-			
+			prob = 1 - (prob1 * prob2);
+
+
 		} else if (crewmember1 != null){ //crewmember2 is null, we are looking for crew1
 			String current = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
-			prob = Math.pow(Math.E, (-alpha * (d - 1)));
-			
-			
+			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
+
+
 		} else { // crewmember1 is null, we are looking for crew2
 			String current = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
-			prob = Math.pow(Math.E, (-alpha * (d - 1)));
+			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		}
-		
+
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -558,31 +551,17 @@ public class bot5 {
 					if (curr.state) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
-						//are we supposed to get where the crewmates are
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-
 						if(curr.pcrew==0) {
 							curr.pcrew=0;
-							
-						// multiply probability of crewmember in cell * probability of beep | crewmember
-						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
-							// multiply by probability of both beeps
-							String destKey = createKey(x, y, dest.x, dest.y);
-							int dtoDest = board.dict.get(destKey);
-							double beepProbDest = (1.0-Math.pow(Math.E, (-alpha * (dtoDest - 1))));
-							
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)*beepProbDest));
-							curr.pcrew = beepProb;
-							
-						} else if(d!=0){
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							curr.pcrew *= (beepProb);
+
+						}else if(d!=0) {
+							curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
 						}
-						
+
 						beta += curr.pcrew;
 					}
 
@@ -612,13 +591,8 @@ public class bot5 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
-						
-
-						// multiply probability of crewmember in cell * probability of beep | crewmember
-						if(curr.pcrew==0) {
-							curr.pcrew=0;
-						}else if(d!=0) {
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
+						if(d!=0) {
+							curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
 						}
 						beta += curr.pcrew;
 					}
@@ -642,6 +616,18 @@ public class bot5 {
 	// this is the cell that we want to move to
 	// breaks ties at random
 	cell findMaxCrew() {
+		String key = createKey(x,y, dest.x, dest.y);
+		double d = (double) board.dict.get(key);
+		double prob = 1-  Math.pow(Math.E, -alpha * (d - 1));
+		if ((double)(Math.random()) <= prob) {
+			cell ret = board.randomCell();
+			while ((ret.x==x && ret.y==y) || (ret.pcrew==0.0)) {
+				ret = board.randomCell();
+			}
+			return ret;
+		}
+		
+		
 		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
 
 		// add our current destination cell to the list
@@ -668,7 +654,6 @@ public class bot5 {
 		}
 
 
-		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;
 		}
@@ -746,13 +731,13 @@ public class bot5 {
 			// if we have saved both crewmembers, return
 			if (isDestination()) {
 				saved++;
-				
+
 				if (saved == 2) {
 					ret[0]=saved;
 					ret[1]=step;
 					return ret;
 				}
-				
+
 				// turn off the crewmember we just saved
 				if (crewmember1 != null && x==crewmember1.x && y==crewmember1.y) {
 					crewmember1 = null;
@@ -761,7 +746,7 @@ public class bot5 {
 				}
 			}
 
-			
+
 			// move aliens
 			alien.move();
 

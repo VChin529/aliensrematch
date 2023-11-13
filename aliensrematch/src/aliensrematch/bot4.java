@@ -563,15 +563,17 @@ public class bot4 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
+						
 						if(curr.pcrew==0) {
 							curr.pcrew=0;
-						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
+							
+						}else if (crewmember1 != null && crewmember2 != null && d!=0) {
 							// multiply by probability of both beeps
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							beepProb = (1.0-(1.0-(curr.pcrew*beepProb))*(beepProb));
 							curr.pcrew = beepProb;
 
-						} else if(d!=0){
+						} else if(d != 0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							curr.pcrew *= (1.0 - beepProb);
 						}
