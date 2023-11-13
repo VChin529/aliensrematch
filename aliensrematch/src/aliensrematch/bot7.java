@@ -107,7 +107,7 @@ public class bot7 {
 
 		// find the cell we want to go to
 		// highest crewmate probability
-		cell dest = findMaxCrew();
+		dest = findMaxCrew();
 
 		cell curr = board.board[x][y];
 		String key = createKey(x, y, dest.x, dest.y);
