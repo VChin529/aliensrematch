@@ -618,7 +618,7 @@ public class bot5 {
 	cell findMaxCrew() {
 		String key = createKey(x,y, dest.x, dest.y);
 		double d = (double) board.dict.get(key);
-		double prob = 1-  Math.pow(Math.E, -alpha * (d - 1));
+		double prob = Math.pow(Math.E, -0.25 * (d - 1));
 		if ((double)(Math.random()) <= prob) {
 			cell ret = board.randomCell();
 			while ((ret.x==x && ret.y==y) || (ret.pcrew==0.0)) {
