@@ -519,23 +519,17 @@ public class bot4 {
 						// are we supposed to get where the crewmates are
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
-						
+
 						if(curr.pcrew==0) {
 							curr.pcrew=0;
-							
-				
-						
-						
-						// multiply probability of crewmember in cell * probability of beep | crewmember
+
+							// multiply probability of crewmember in cell * probability of beep | crewmember
 						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
 							// multiply by probability of both beeps
-							String destKey = createKey(x, y, dest.x, dest.y);
-							int dtoDest = board.dict.get(destKey);
-							double beepProbDest = (1.0-Math.pow(Math.E, (-alpha * (d - 1))));
-							
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)));
 							curr.pcrew = beepProb;
+							
 						} else if(d!=0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							curr.pcrew *= (beepProb);
@@ -550,9 +544,9 @@ public class bot4 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					
+
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
-					
+
 				}
 			}
 
@@ -590,7 +584,7 @@ public class bot4 {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
-					
+
 				}
 			}
 

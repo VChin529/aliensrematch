@@ -487,35 +487,35 @@ public class bot3 {
 	// beep depends on location of both crewmembers
 	boolean beep() {
 		double prob = 0.0;
-		
+
 		// getting distance from our position to the crewmember
 		if (crewmember1 != null && crewmember2 != null) {
 			// find the probability of beep from crewmember1 && crewmember2
 			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
 			double prob1 = 1.0-(Math.pow(Math.E, (-alpha * (d1 - 1))));
-			
+
 			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
 			double prob2 = 1.0-(Math.pow(Math.E, (-alpha * (d2 - 1))));
-			
+
 			// final beep probability is from one OR the other
 			// 1 - and
 			prob = 1 - (prob1 * prob2);
-			
-			
+
+
 		} else if (crewmember1 != null){ //crewmember2 is null, we are looking for crew1
 			String current = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
-			
-			
+
+
 		} else { // crewmember1 is null, we are looking for crew2
 			String current = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		}
-		
+
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -555,9 +555,11 @@ public class bot3 {
 						// multiply probability of crewmember in cell * probability of beep | crewmember
 						if(curr.pcrew==0) {
 							curr.pcrew=0;
+							
 						}else if(d!=0) {
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
+							curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability of one beep
 						}
+						
 						beta += curr.pcrew;
 					}
 
@@ -588,7 +590,7 @@ public class bot3 {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
 						if(d!=0) {
-						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+							curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
 						}
 						beta += curr.pcrew;
 					}
@@ -716,13 +718,13 @@ public class bot3 {
 			// if we have saved both crewmembers, return
 			if (isDestination()) {
 				saved++;
-				
+
 				if (saved == 2) {
 					ret[0]=saved;
 					ret[1]=step;
 					return ret;
 				}
-				
+
 				// turn off the crewmember we just saved
 				if (crewmember1 != null && x==crewmember1.x && y==crewmember1.y) {
 					crewmember1 = null;
@@ -731,7 +733,7 @@ public class bot3 {
 				}
 			}
 
-			
+
 			// move aliens
 			alien.move();
 

@@ -567,9 +567,6 @@ public class bot5 {
 						if(curr.pcrew==0) {
 							curr.pcrew=0;
 							
-				
-						
-						
 						// multiply probability of crewmember in cell * probability of beep | crewmember
 						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
 							// multiply by probability of both beeps
@@ -580,10 +577,12 @@ public class bot5 {
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)*beepProbDest));
 							curr.pcrew = beepProb;
+							
 						} else if(d!=0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							curr.pcrew *= (beepProb);
 						}
+						
 						beta += curr.pcrew;
 					}
 
