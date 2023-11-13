@@ -13,7 +13,7 @@ public class bot6 {
 	alien alien1, alien2; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot6(int k, double alpha) {
@@ -22,7 +22,7 @@ public class bot6 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(50);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -343,7 +343,7 @@ public class bot6 {
 				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
 			}
-			System.out.println(beta);
+			//System.out.println(beta);
 
 			// scanner does not go off
 		} else {
@@ -420,7 +420,7 @@ public class bot6 {
 					beta += curr.palien;
 				}
 			}
-			System.out.println(beta);
+			//System.out.println(beta);
 
 		} else {
 			for (int i = 0; i < board.board.length; i++) {

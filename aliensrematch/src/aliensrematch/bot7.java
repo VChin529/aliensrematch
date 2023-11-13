@@ -13,7 +13,7 @@ public class bot7 {
 	alien alien1, alien2; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 	boolean ct = false;
 
@@ -23,7 +23,7 @@ public class bot7 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(50);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -329,7 +329,8 @@ public class bot7 {
 						cells.add(curr);
 						prob_square_total += curr.palien;
 					} else { // everything else is 0
-						curr.palien = 0;
+						cells.add(curr);
+						prob_square_total += curr.palien;
 					}
 				}
 			}
@@ -347,8 +348,12 @@ public class bot7 {
 				 System.out.println("probability before division " +
 						 curr.palien + " " + prob_square_total);
 						 */
-				 
-				curr.palien *= 1.0 / prob_square_total;
+				if(alienScanCoord(curr.x,curr.y)&&curr.state) {
+					curr.palien *= 1.0 / prob_square_total;
+				}else {
+					curr.palien *= (1.0-(1.0 / prob_square_total));
+				}
+				
 				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
 			}
@@ -418,7 +423,7 @@ public class bot7 {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 
-					if ((x==i && y==j) || !alienScanCoord(i,j)) {
+					if ((x==i && y==j)) {
 						curr.palien = 0;
 						
 					} else if (curr.state){
@@ -449,7 +454,7 @@ public class bot7 {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 
-					if ((x==i && y==j) || alienScanCoord(i,j)) {
+					if ((x==i && y==j)) {
 						curr.palien = 0;
 					} else if (curr.state){
 						curr.palien = 0;
@@ -591,10 +596,26 @@ public class bot7 {
 						// probability that the beep went off if the crewmember was in that cell
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
-
+						if(curr.pcrew==0) {
+							curr.pcrew=0;
+							
+				
+						
+						
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1));
-						beta += curr.pcrew;
+						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
+							// multiply by probability of both beeps
+							String destKey = createKey(x, y, dest.x, dest.y);
+							int dtoDest = board.dict.get(destKey);
+							double beepProbDest = (1.0-Math.pow(Math.E, (-alpha * (d - 1))));
+							
+							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
+							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)));
+							curr.pcrew = beepProb;
+						} else if(d!=0){
+							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
+							curr.pcrew *= (beepProb);
+						}
 					}
 
 				}
@@ -623,7 +644,18 @@ public class bot7 {
 					if (curr.state) {
 						String current = createKey(x, y, i, j);
 						int d = board.dict.get(current);
-						curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+						if(curr.pcrew==0) {
+							curr.pcrew=0;
+						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
+							// multiply by probability of both beeps
+							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
+							beepProb = (1.0-(1.0-(curr.pcrew*beepProb))*(beepProb));
+							curr.pcrew = beepProb;
+
+						} else if(d!=0){
+							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
+							curr.pcrew *= (1.0 - beepProb);
+						}
 						beta += curr.pcrew;
 					}
 				}
