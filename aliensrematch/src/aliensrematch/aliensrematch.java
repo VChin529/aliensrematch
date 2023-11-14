@@ -41,11 +41,11 @@ public class aliensrematch {
 			ret5 = bot5.run();
 			
 			
-			bot6 bot6 = new bot6(25, 0.03);
+			/*bot6 bot6 = new bot6(25, 0.03);
 			int[] ret6 = new int[2];
-			ret6 = bot6.run(); 
+			ret6 = bot6.run(); */
 			
-			bot7 bot7 = new bot7(25, 0.03);
+			/*bot7 bot7 = new bot7(2, 0.03);
 			int[] ret7 = new int[2];
 			ret7 = bot7.run();
 			
@@ -62,11 +62,11 @@ public class aliensrematch {
 			saved5 += ret5[0];
 			sumsteps5 += ret5[1];
 			
-			saved6 += ret6[0];
-			sumsteps6 += ret6[1];
+			/*saved6 += ret6[0];
+			sumsteps6 += ret6[1];*/
 			
-			saved7 += ret7[0];
-			sumsteps7 += ret7[1];
+			/*saved7 += ret7[0];
+			sumsteps7 += ret7[1];*/
 			
 
 		}
