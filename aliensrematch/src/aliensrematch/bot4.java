@@ -527,8 +527,8 @@ public class bot4 {
 						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
 							// multiply by probability of both beeps
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)));
-							curr.pcrew = beepProb;
+							
+							curr.pcrew*= 1-((1.0-beepProb)*(1.0-beepProb));
 							
 						} else if(d!=0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
@@ -570,8 +570,7 @@ public class bot4 {
 						}else if (crewmember1 != null && crewmember2 != null && d!=0) {
 							// multiply by probability of both beeps
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							beepProb = (1.0-(1.0-(curr.pcrew*beepProb))*(beepProb));
-							curr.pcrew = beepProb;
+							curr.pcrew*= (1.0-(1.0-(1.0-beepProb)*(1.0-beepProb)));
 
 						} else if(d != 0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));

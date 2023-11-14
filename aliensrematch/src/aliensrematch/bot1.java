@@ -126,14 +126,18 @@ public class bot1 {
 		if (curr.right!=null && curr.right.state && curr.right.palien == 0) {
 			possCells.add(curr.right);
 		}
-
+		if(possCells.size()==0) {
+			path.push(ret);
+			return path;
+			
+		}
 
 		// iterate through all possible cells
-		// find the one with the shortest distance
-		int minDistance = Integer.MAX_VALUE;
+		// find the one with the shortest distance to our belief 
+		int minDistance = board.dict.get(key);
 		for(int i=0; i<possCells.size(); i++) {
 			key = createKey(possCells.get(i).x,possCells.get(i).y, dest.x, dest.y);
-			if (minDistance > board.dict.get(key)) {
+			if (board.dict.get(key) < minDistance) {
 				ret = possCells.get(i);
 				minDistance = board.dict.get(key);
 			}
@@ -142,7 +146,10 @@ public class bot1 {
 		if (debug == 1) {
 			System.out.println(ret.x+" "+ret.y+ " is next step");
 		}
-
+		if(ret==curr) {
+			int pos = (int)Math.random()*possCells.size();
+			ret = possCells.get(pos);
+		}
 		path.push(ret);
 		return path;
 
@@ -522,9 +529,9 @@ public class bot1 {
 					if (curr.state) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
-						String current = createKey(x, y, i, j);
+						String current = createKey(x, y, curr.x, curr.y);
 						int d = board.dict.get(current);
-
+						
 						// multiply probability of crewmember in cell * probability of beep | crewmember
 						if(d!=0) {
 						curr.pcrew *= Math.pow(Math.E, (-alpha) * (d - 1));
@@ -556,10 +563,10 @@ public class bot1 {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					if (curr.state) {
-						String current = createKey(x, y, i, j);
+						String current = createKey(x, y, curr.x, curr.y);
 						int d = board.dict.get(current);
 						if(d!=0) {
-						curr.pcrew *= (1 - Math.pow(Math.E, (-alpha) * (d - 1)));
+						curr.pcrew *= (1.0 - (Math.pow(Math.E, (-alpha) * (d - 1))));
 						}
 						beta += curr.pcrew;
 					}

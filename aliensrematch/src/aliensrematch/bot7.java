@@ -319,19 +319,15 @@ public class bot7 {
 				System.out.println("SCANNER!");
 			}
 			
-			ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
-			double prob_square_total = 0.0;
+			double prob_square_total = 0.0;//the sum of the probabilities inside the detection square
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					// alien must be in this area && open
 					if (alienScanCoord(i, j) && curr.state) {
-						cells.add(curr);
 						prob_square_total += curr.palien;
-					} else { // everything else is 0
-						cells.add(curr);
-						prob_square_total += curr.palien;
-					}
+					} 
+					
 				}
 			}
 			
@@ -341,21 +337,17 @@ public class bot7 {
 			}
 			
 
-			for (cell curr : cells) {
-				/*
-				 System.out.println("cells list"); System.out.println("cell coords: " + curr.x
-						 + ", " + curr.y);
-				 System.out.println("probability before division " +
-						 curr.palien + " " + prob_square_total);
-						 */
+			for (cell[] currline : board.board) {
+				for(cell curr: currline) {
+				
 				if(alienScanCoord(curr.x,curr.y)&&curr.state) {
 					curr.palien *= 1.0 / prob_square_total;
 				}else {
 					curr.palien *= (1.0-(1.0 / prob_square_total));
 				}
 				
-				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
+				}
 			}
 			if (beta == 0) {
 				return;
@@ -610,8 +602,7 @@ public class bot7 {
 							double beepProbDest = (1.0-Math.pow(Math.E, (-alpha * (d - 1))));
 							
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							beepProb = (1.0-(curr.pcrew*beepProb)*((beepProb)));
-							curr.pcrew = beepProb;
+							curr.pcrew*= (1.0-beepProb)*(1.0-beepProb);
 						} else if(d!=0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
 							curr.pcrew *= (beepProb);
@@ -649,8 +640,7 @@ public class bot7 {
 						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
 							// multiply by probability of both beeps
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							beepProb = (1.0-(1.0-(curr.pcrew*beepProb))*(beepProb));
-							curr.pcrew = beepProb;
+							curr.pcrew*= (1.0-(1.0-beepProb)*(1.0-beepProb));
 
 						} else if(d!=0){
 							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
