@@ -91,12 +91,10 @@ public class bot2 {
 		// find the cell we want to go to
 		// highest crewmate probability
 		dest = findMaxCrew();
-
 		Queue<cell> queue = new LinkedList<cell>();
 		ArrayList<cell> visited = new ArrayList<cell>();
 
 		// add our current cell to the fringe
-
 		queue.add(curr);
 		while (!queue.isEmpty()) {
 			// check if we are at the crewmate
@@ -121,7 +119,7 @@ public class bot2 {
 				curr.up.parent = curr;
 			} else if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
 					&& (!visited.contains(curr.up))) {
-				if (d != 0 && curr.up.palien <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
 					queue.add(curr.up);
 				}
 			}
@@ -134,7 +132,7 @@ public class bot2 {
 				curr.down.parent = curr;
 			}else if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down)) && (curr.down != null)
 					&& (!visited.contains(curr.down))) {
-				if (d != 0 && curr.down.palien <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
 					queue.add(curr.down);
 				}
 			}
@@ -147,7 +145,7 @@ public class bot2 {
 				curr.left.parent = curr;
 			}else if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left)) && (curr.left != null)
 					&& (!visited.contains(curr.left))) {
-				if (d != 0 && curr.left.palien <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
 					queue.add(curr.left);
 				}
 			}
@@ -160,7 +158,7 @@ public class bot2 {
 				curr.right.parent = curr;
 			}else if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right)) && (curr.right != null)
 					&& (!visited.contains(curr.right))) {
-				if (d != 0 && curr.right.palien <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random()<= ((d + 1 / d) - 1)) {
 					queue.add(curr.right);
 				}
 			}
@@ -701,7 +699,7 @@ public class bot2 {
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
-				System.out.println(step);
+				System.out.println("DIED"+step);
 				ret[0] = 0;
 				ret[1] = step;
 				return ret;
@@ -713,7 +711,7 @@ public class bot2 {
 			if (isDestination()) {
 				ret[0] = 1;
 				ret[1] = step;
-				System.out.println(step);
+				System.out.println("SAVED"+step);
 				return ret;
 			}
 
@@ -729,7 +727,7 @@ public class bot2 {
 			if (board.getCell(x, y).alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
-				System.out.println(step);
+				System.out.println("DIED"+step);
 				return ret;
 			}
 			wipeParents();

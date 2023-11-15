@@ -744,6 +744,7 @@ public class bot1 {
 			if (curr.alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
+				System.out.println("DIED"+step);
 				return ret;
 
 			}
@@ -754,6 +755,7 @@ public class bot1 {
 				
 				ret[0] = 1;
 				ret[1] = step;
+				System.out.println("SAVED"+step);
 				return ret;
 			}
 
@@ -769,6 +771,7 @@ public class bot1 {
 			if (board.getCell(x, y).alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
+				System.out.println("DIED"+step);
 				return ret;
 			}
 			wipeParents();

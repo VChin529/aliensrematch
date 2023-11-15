@@ -20,10 +20,11 @@ public class aliensrematch {
 		int iters=10;
 		for (int i = 0; i < iters; i++) {
 			System.out.println(i);
+			System.out.println("bot1");
 			bot1 bot1 = new bot1(10, 0.05);
 			int[] ret1 = new int[2];
 			ret1 = bot1.run(); 
-			
+			System.out.println("bot2");
 			bot2 bot2 = new bot2(10, 0.05);
 			int[] ret2 = new int[2];
 			ret2 = bot2.run();
