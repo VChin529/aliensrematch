@@ -126,7 +126,7 @@ public class bot5 {
 				curr.up.parent = curr;
 			} else if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
 					&& (!visited.contains(curr.up))) {
-				if (d != 0 && Math.random() <= 2*curr.up.pcrew) {
+				if (d != 0 && Math.random() <= curr.up.pcrew) {
 					queue.add(curr.up);
 					ct++;
 				}
@@ -141,7 +141,7 @@ public class bot5 {
 				curr.down.parent = curr;
 			}else if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down)) && (curr.down != null)
 					&& (!visited.contains(curr.down))) {
-				if (d != 0 && Math.random() <= 2*curr.down.pcrew) {
+				if (d != 0 && Math.random() <= curr.down.pcrew) {
 					queue.add(curr.down);
 					ct++;
 				}
@@ -156,7 +156,7 @@ public class bot5 {
 				curr.left.parent = curr;
 			}else if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left)) && (curr.left != null)
 					&& (!visited.contains(curr.left))) {
-				if (d != 0 && Math.random() <= 2*curr.left.pcrew) {
+				if (d != 0 && Math.random() <= curr.left.pcrew) {
 					queue.add(curr.left);
 					ct++;
 				}
@@ -171,7 +171,7 @@ public class bot5 {
 				curr.right.parent = curr;
 			}else if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right)) && (curr.right != null)
 					&& (!visited.contains(curr.right))) {
-				if (d != 0 && Math.random()<= 2*curr.right.pcrew) {
+				if (d != 0 && Math.random()<= curr.right.pcrew) {
 					queue.add(curr.right);
 					ct++;
 				}
