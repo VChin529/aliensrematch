@@ -16,7 +16,6 @@ public class bot2 {
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 	int ct = 0;
-	LimitedQueue<cell> last5 = new LimitedQueue<>(5);
 
 	public bot2(int k, double alpha) {
 		// initialize k and alpha values
@@ -699,7 +698,9 @@ public class bot2 {
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
+				if(debug ==2) {
 				System.out.println("DIED"+step);
+				}
 				ret[0] = 0;
 				ret[1] = step;
 				return ret;
@@ -711,7 +712,9 @@ public class bot2 {
 			if (isDestination()) {
 				ret[0] = 1;
 				ret[1] = step;
+				if(debug ==2) {
 				System.out.println("SAVED"+step);
+				}
 				return ret;
 			}
 
@@ -727,7 +730,9 @@ public class bot2 {
 			if (board.getCell(x, y).alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
-				System.out.println("DIED"+step);
+				if(debug ==2) {
+					System.out.println("DIED"+step);
+					}
 				return ret;
 			}
 			wipeParents();

@@ -28,24 +28,24 @@ public class aliensrematch {
 			bot2 bot2 = new bot2(10, 0.05);
 			int[] ret2 = new int[2];
 			ret2 = bot2.run();
-			
-			//bot3 bot3 = new bot3(25, 0.03);
+			System.out.println("bot3");
+			bot3 bot3 = new bot3(10, 0.05);
 			int[] ret3 = new int[2];
-			//ret3 = bot3.run();
-
-			//bot4 bot4 = new bot4(25, 0.03);
+			ret3 = bot3.run();
+			System.out.println("bot4");
+			bot4 bot4 = new bot4(10, 0.05);
 			int[] ret4 = new int[2];
-			//ret4 = bot4.run();
-			
+			ret4 = bot4.run();
+			System.out.println("bot5");
 			//bot5 bot5 = new bot5(25, 0.03);
 			int[] ret5 = new int[2];
 			//ret5 = bot5.run();
 			
-			
-			//bot6 bot6 = new bot6(25, 0.03);
+			System.out.println("bot6");
+			bot6 bot6 = new bot6(25, 0.05);
 			int[] ret6 = new int[2];
-			//ret6 = bot6.run(); 
-			
+			ret6 = bot6.run(); 
+			System.out.println("bot7");
 			//bot7 bot7 = new bot7(25, 0.03);
 			int[] ret7 = new int[2];
 			//ret7 = bot7.run();

@@ -15,9 +15,9 @@ public class bot1 {
 	alien alien; // array of aliens
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 0; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore. 0 = nothing , 1 = print the board, 2 = see more detailed results
 	int debugpath = 0; // utility for debugging. ignore.
-	LimitedQueue<cell> last5 = new LimitedQueue<>(5);
+
 
 	public bot1(int k, double alpha) {
 		// initialize k and alpha values
@@ -744,7 +744,9 @@ public class bot1 {
 			if (curr.alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
+				if(debug ==2) {
 				System.out.println("DIED"+step);
+				}
 				return ret;
 
 			}
@@ -755,7 +757,9 @@ public class bot1 {
 				
 				ret[0] = 1;
 				ret[1] = step;
+				if(debug ==2) {
 				System.out.println("SAVED"+step);
+				}
 				return ret;
 			}
 
@@ -771,7 +775,9 @@ public class bot1 {
 			if (board.getCell(x, y).alien == true) {
 				ret[0] = 0;
 				ret[1] = step;
+				if(debug ==2) {
 				System.out.println("DIED"+step);
+				}
 				return ret;
 			}
 			wipeParents();
