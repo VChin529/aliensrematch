@@ -118,10 +118,12 @@ public class bot2 {
 				curr.up.parent = curr;
 			} else if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
 					&& (!visited.contains(curr.up))) {
-				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.up);
+					ct++;
 				}
 			}
+			
 			if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down))
 					&& (!visited.contains(curr.down)) && (curr.down.palien == 0)) {
 				queue.add(curr.down);
@@ -131,10 +133,12 @@ public class bot2 {
 				curr.down.parent = curr;
 			}else if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down)) && (curr.down != null)
 					&& (!visited.contains(curr.down))) {
-				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.down);
+					ct++;
 				}
 			}
+			
 			if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left))
 					&& (!visited.contains(curr.left)) && (curr.left.palien == 0)) {
 				queue.add(curr.left);
@@ -144,10 +148,12 @@ public class bot2 {
 				curr.left.parent = curr;
 			}else if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left)) && (curr.left != null)
 					&& (!visited.contains(curr.left))) {
-				if (d != 0 && Math.random() <= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.left);
+					ct++;
 				}
 			}
+			
 			if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right))
 					&& (!visited.contains(curr.right)) && (curr.right.palien == 0)) {
 				queue.add(curr.right);
@@ -157,10 +163,12 @@ public class bot2 {
 				curr.right.parent = curr;
 			}else if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right)) && (curr.right != null)
 					&& (!visited.contains(curr.right))) {
-				if (d != 0 && Math.random()<= ((d + 1 / d) - 1)) {
+				if (d != 0 && Math.random()<= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.right);
+					ct++;
 				}
 			}
+			
 			// add current node to the visited fringe
 			visited.add(curr);
 
