@@ -248,6 +248,9 @@ public class bot1 {
 			path.push(board.board[currx][curry]);
 			// get next parent
 			next = board.board[currx][curry].parent;
+			if(next==null) {
+				break;
+			}
 			currx = next.x;
 			curry = next.y;
 			// set parent to null so we don't run into problems the next runs
@@ -748,7 +751,7 @@ public class bot1 {
 			// crewmember check
 			// saved crewmember, end
 			if (isDestination()) {
-				System.out.println("we got em"+ step);
+				
 				ret[0] = 1;
 				ret[1] = step;
 				return ret;
