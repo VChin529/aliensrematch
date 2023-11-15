@@ -15,7 +15,6 @@ public class bot2 {
 	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
-	int ct = 0;
 
 	public bot2(int k, double alpha) {
 		// initialize k and alpha values
@@ -120,7 +119,6 @@ public class bot2 {
 					&& (!visited.contains(curr.up))) {
 				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.up);
-					ct++;
 				}
 			}
 			
@@ -135,7 +133,6 @@ public class bot2 {
 					&& (!visited.contains(curr.down))) {
 				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.down);
-					ct++;
 				}
 			}
 			
@@ -150,7 +147,6 @@ public class bot2 {
 					&& (!visited.contains(curr.left))) {
 				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.left);
-					ct++;
 				}
 			}
 			
@@ -165,7 +161,6 @@ public class bot2 {
 					&& (!visited.contains(curr.right))) {
 				if (d != 0 && Math.random()<= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.right);
-					ct++;
 				}
 			}
 			
