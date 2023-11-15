@@ -3,6 +3,7 @@ package aliensrematch;
 import java.util.*;
 import java.text.DecimalFormat;
 
+
 // 1 crewmember 1 alien
 // simulated anealling
 public class bot2 {
@@ -16,6 +17,7 @@ public class bot2 {
 	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 	int ct = 0;
+	LimitedQueue<cell> last5 = new LimitedQueue<>(5); 
 
 	public bot2(int k, double alpha) {
 		// initialize k and alpha values
@@ -109,8 +111,9 @@ public class bot2 {
 		if (debug == 1) {
 			System.out.println("Were pathing to: x" + dest.x+ " y:" + dest.y+ " With probability: "+ dest.pcrew);
 		}
-
-
+		
+		
+		
 		cell ret=curr;
 		// collect all cells we can possibly move to
 		// our unblocked neighbors without alien probability = 0
@@ -156,11 +159,35 @@ public class bot2 {
 		}
 
 		path.push(ret);
+		last5.add(ret);
+		if(debug==1) {
+		for(int i=0; i<last5.size();i++) {
+			cell temp = last5.get(i);
+			System.out.print("["+temp.x+ " "+temp.y+"] ");
+		}
+		}
+		System.out.println();
 		return path;
 
 	}
 
+	/*public class LimitedQueue<E> extends LinkedList<E> {
 
+	    private int limit;
+
+	    public LimitedQueue(int limit) {
+	        this.limit = limit;
+	    }
+
+	    @Override
+	    public boolean add(E o) {
+	        boolean added = super.add(o);
+	        while (added && size() > limit) {
+	           super.remove();
+	        }
+	        return added;
+	    }
+	}*/
 
 	// trace back parent pointers to return the shortest path as a stack
 	Stack<cell> getPath() {
