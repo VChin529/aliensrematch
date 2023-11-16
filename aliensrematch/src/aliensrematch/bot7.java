@@ -23,7 +23,7 @@ public class bot7 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(10);
+		board = new board(50);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -353,10 +353,7 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
-			if (beta == 0) {
-				return;
-			}
-
+			
 			// scanner does not go off
 		} else {
 			// the new cells we just moved into now have a probability of 0
@@ -420,6 +417,10 @@ public class bot7 {
 				if ((x==i && y==j)) {
 					curr.palien = 0;
 				} else if (curr.state){
+					if (!alienScan() && alienScanCoord(i,j)) {
+						curr.palien = 0;
+						continue;
+					}
 					curr.palien = 0;
 					cell n = curr.up;
 					if (n != null && n.state && n.neighbor_ct != 0) {
