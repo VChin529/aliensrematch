@@ -22,7 +22,7 @@ public class bot4 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(30);
+		board = new board(50);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -564,7 +564,7 @@ public class bot4 {
 									if (curr2.state && !(i==k && j==l)&& !(x==i && y==j)) {
 										String temp2 = createKey(x, y, k, l);
 										int d2 = board.dict.get(temp2);
-										beepProb2 += (probs[k][l] * Math.pow(Math.E,  (-alpha * (d2 - 1))));
+										beepProb2 += (probs[k][l] * (Math.pow(Math.E,  (-alpha * (d2 - 1)))));
 									}
 								}
 							}
@@ -619,11 +619,11 @@ public class bot4 {
 									if (curr2.state && !(i==k && j==l)) {
 										String temp2 = createKey(x, y, k, l);
 										int d2 = board.dict.get(temp2);
-										beepProb2 += (probs[k][l]*(1 - Math.pow(Math.E,  (-alpha * (d2 - 1)))));
+										beepProb2 += (probs[k][l]*(1.0 - Math.pow(Math.E,  (-alpha * (d2 - 1)))));
 									}
 								}
 							}
-							curr1.pcrew = curr1.pcrew * (1-beepProb1) * beepProb2;
+							curr1.pcrew = curr1.pcrew * beepProb1 * beepProb2;
 
 						} else if (d1 != 0) {
 							double beepProb = Math.pow(Math.E, (-alpha * (d1 - 1)));
