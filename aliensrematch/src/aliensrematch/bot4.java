@@ -568,7 +568,7 @@ public class bot4 {
 									}
 								}
 							}
-							curr1.pcrew *= ((1 - beepProb2)/beepProb1);
+							curr1.pcrew *= (1 / (beepProb1 * (1 - beepProb2)));
 							System.out.println(beepProb2);
 
 						} else if (d1 != 0) {
