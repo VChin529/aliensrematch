@@ -13,7 +13,7 @@ public class bot4 {
 	alien alien; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 0; // utility for debugging. ignore.
+	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot4(int k, double alpha) {
@@ -22,7 +22,7 @@ public class bot4 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(50);
+		board = new board(5);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -544,7 +544,7 @@ public class bot4 {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr1 = board.board[i][j];
-					if (curr1.state) {
+					if (curr1.state && !(x==i && y==j)) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
 						String temp1 = createKey(x, y, i, j);
@@ -561,14 +561,15 @@ public class bot4 {
 							for (int k = 0; k < board.board.length; k++) {
 								for (int l = 0; l < board.board.length; l++) {
 									cell curr2 = board.board[k][l];
-									if (curr2.state) {
+									if (curr2.state && !(i==k && j==l)&& !(x==i && y==j)) {
 										String temp2 = createKey(x, y, k, l);
 										int d2 = board.dict.get(temp2);
 										beepProb2 += (probs[k][l] * Math.pow(Math.E,  (-alpha * (d2 - 1))));
 									}
 								}
 							}
-							curr1.pcrew *= 1 - ((1.0 - beepProb1) * (1.0 - beepProb2));
+							curr1.pcrew *= ((1 - beepProb2)/beepProb1);
+							System.out.println(beepProb2);
 
 						} else if (d1 != 0) {
 							curr1.pcrew *= (beepProb1);
@@ -616,7 +617,7 @@ public class bot4 {
 							for (int k = 0; k < board.board.length; k++) {
 								for (int l = 0; l < board.board.length; l++) {
 									cell curr2 = board.board[k][l];
-									if (curr2.state) {
+									if (curr2.state && !(i==k && j==l)) {
 										String temp2 = createKey(x, y, k, l);
 										int d2 = board.dict.get(temp2);
 										beepProb2 += (probs[k][l]*(1 - Math.pow(Math.E,  (-alpha * (d2 - 1)))));
@@ -796,7 +797,6 @@ public class bot4 {
 				return ret;
 			}
 			wipeParents();
-			System.out.println(step);
 		}
 
 	}
