@@ -13,7 +13,7 @@ public class bot4 {
 	alien alien; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot4(int k, double alpha) {
@@ -22,7 +22,7 @@ public class bot4 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(30);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -568,8 +568,7 @@ public class bot4 {
 									}
 								}
 							}
-							curr1.pcrew *= (1 / (beepProb1 * (1 - beepProb2)));
-							System.out.println(beepProb2);
+							curr1.pcrew = curr1.pcrew * (beepProb1 + beepProb2);
 
 						} else if (d1 != 0) {
 							curr1.pcrew *= (beepProb1);
@@ -624,7 +623,7 @@ public class bot4 {
 									}
 								}
 							}
-							curr1.pcrew *= 1 - ((1.0 - beepProb1) * (1.0 - beepProb2));
+							curr1.pcrew = curr1.pcrew * (1-beepProb1) * beepProb2;
 
 						} else if (d1 != 0) {
 							double beepProb = Math.pow(Math.E, (-alpha * (d1 - 1)));
