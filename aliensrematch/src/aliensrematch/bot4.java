@@ -612,8 +612,7 @@ public class bot4 {
 							// sum up all the ways we can get a beep
 							curr1.pcrew *= (beepProb1 / totalProb);
 						} else if (d1 != 0) {
-							double beepProb = Math.pow(Math.E, (-alpha * (d1 - 1)));
-							curr1.pcrew *= (1.0 - beepProb);
+							curr1.pcrew *= (beepProb1/totalProb);
 						}
 						beta += curr1.pcrew;
 					}
