@@ -18,7 +18,7 @@ public class aliensrematch {
 		int saved7 = 0, sumsteps7 = 0;
 		int ran5 = 0;
 
-		int iters=1;
+		int iters=30;
 		for (int i = 0; i < iters; i++) {
 			System.out.println(i);
 			/*System.out.println("bot1");

@@ -21,7 +21,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(30);
+		board = new board(20);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -501,8 +501,8 @@ public class bot4 {
 										int cell1d = board.dict.get(cell1key);
 										String cell2key = createKey(x, y, cell2.x, cell2.y);
 										int cell2d = board.dict.get(cell2key);
-										totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1))))
-												* (Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d] * probs[a][b];
+										totalProb += (1 -(Math.pow(Math.E, (-alpha * (cell1d - 1))))
+												* (Math.pow(Math.E, (-alpha * (cell2d - 1))))) * probs[c][d] * probs[a][b];
 									}
 								}
 							}
@@ -572,8 +572,8 @@ public class bot4 {
 										int cell1d = board.dict.get(cell1key);
 										String cell2key = createKey(x, y, cell2.x, cell2.y);
 										int cell2d = board.dict.get(cell2key);
-										totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
-												* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d]
+										totalProb += (1 -(1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
+												* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1))))) * probs[c][d]
 														* probs[a][b];
 									}
 								}
