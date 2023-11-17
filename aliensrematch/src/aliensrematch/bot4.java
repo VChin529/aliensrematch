@@ -488,6 +488,7 @@ public class bot4 {
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
+			if(crewmember1!=null && crewmember2!=null) {
 			for (int a = 0; a < board.board.length; a++) {
 				for (int b = 0; b < board.board.length; b++) {
 					cell cell1 = board.board[a][b];
@@ -504,6 +505,18 @@ public class bot4 {
 											* (Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d] * probs[a][b];
 								}
 							}
+						}
+					}
+				}
+			}
+			}else {
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							String cell1key = createKey(x, y, cell1.x, cell1.y);
+							int cell1d = board.dict.get(cell1key);
+							totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1)))) * probs[a][b];
 						}
 					}
 				}
@@ -526,7 +539,7 @@ public class bot4 {
 							// sum up all the ways we can get a beep
 							curr1.pcrew *= (beepProb1 / totalProb);
 						} else if (d1 != 0) {
-							curr1.pcrew *= (beepProb1);
+							curr1.pcrew *= (beepProb1/totalProb);
 						}
 						beta += curr1.pcrew;
 					}
@@ -544,6 +557,7 @@ public class bot4 {
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
+			if(crewmember1!=null && crewmember2!=null) {
 			for (int a = 0; a < board.board.length; a++) {
 				for (int b = 0; b < board.board.length; b++) {
 					cell cell1 = board.board[a][b];
@@ -565,6 +579,18 @@ public class bot4 {
 					}
 				}
 			}
+		}else {
+			for (int a = 0; a < board.board.length; a++) {
+				for (int b = 0; b < board.board.length; b++) {
+					cell cell1 = board.board[a][b];
+					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						int cell1d = board.dict.get(cell1key);
+						totalProb += (1.0 - (Math.pow(Math.E, (-alpha * (cell1d - 1))))) * probs[a][b];
+					}
+				}
+			}
+		}
 			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
