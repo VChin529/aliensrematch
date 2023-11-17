@@ -510,21 +510,38 @@ public class bot3 {
 	// calculate crewmember probabilities
 	void crewmateProbability() {
 		// if we find the crewmember
+		// if we find the crewmember
 		// there is now no crewmember in this cell, so p = 0
 		// continue on with recalculating probabilities
 		if (isDestination()) {
 			board.board[x][y].pcrew = 0.0;
 		}
-
+		
+		double[][] probs = new double[board.board.length][board.board.length];
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				probs[i][j] = board.board[i][j].pcrew;
+			}
+		}
+		
 		// if the bot gets a beep
 		if (beep()) {
 			if (debug == 1) {
 				System.out.println("BEEP!");
 			}
-
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
-
+			double totalProb = 0.0;
+			for (int a = 0; a < board.board.length; a++) {
+				for (int b = 0; b < board.board.length; b++) {
+					cell cell1 = board.board[a][b];
+					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						int cell1d = board.dict.get(cell1key);
+						totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1)))) * probs[a][b];
+					}
+				}
+			}
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
@@ -532,24 +549,16 @@ public class bot3 {
 					if (curr.state) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
-						String current = createKey(x, y, i, j);
+						String current = createKey(x, y, curr.x, curr.y);
 						int d = board.dict.get(current);
-
 						// multiply probability of crewmember in cell * probability of beep | crewmember
-						if (curr.pcrew == 0) {
-							curr.pcrew = 0;
-
-						} else if (d != 0) {
-							curr.pcrew *= Math.pow(Math.E, -alpha * (d - 1)); // still only multiplying by probability
-																				// of one beep
+						if (d != 0) {
+							curr.pcrew *= (Math.pow(Math.E, (-alpha) * (d - 1)) / totalProb);
 						}
-
 						beta += curr.pcrew;
 					}
-
 				}
 			}
-
 			// normalize
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
@@ -557,37 +566,44 @@ public class bot3 {
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
 				}
 			}
-
 			// if the bot does not get a beep
 		} else {
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
 
+			double totalProb = 0.0;
+			for (int a = 0; a < board.board.length; a++) {
+				for (int b = 0; b < board.board.length; b++) {
+					cell cell1 = board.board[a][b];
+					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						int cell1d = board.dict.get(cell1key);
+						totalProb += (1.0 - (Math.pow(Math.E, (-alpha * (cell1d - 1))))) * probs[a][b];
+					}
+				}
+			}
 			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					if (curr.state) {
-						String current = createKey(x, y, i, j);
+						String current = createKey(x, y, curr.x, curr.y);
 						int d = board.dict.get(current);
 						if (d != 0) {
-							curr.pcrew *= (1 - Math.pow(Math.E, -alpha * (d - 1)));
+							curr.pcrew *= ((1.0 - (Math.pow(Math.E, (-alpha) * (d - 1)))) / totalProb);
 						}
 						beta += curr.pcrew;
 					}
 				}
 			}
-
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
 				}
 			}
-
 		}
-
 	}
 
 	// finds cell with highest crewmate probability

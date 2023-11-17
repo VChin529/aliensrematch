@@ -489,26 +489,26 @@ public class bot4 {
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
-			for (int a = 0; a < board.board.length; a++) {
-				for (int b = 0; b < board.board.length; b++) {
-					cell cell1 = board.board[a][b];
-					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-						for (int c = a; c < board.board.length; c++) {
-							for (int d = b; d < board.board.length; d++) {
-								cell cell2 = board.board[c][d];
-								if (cell2.state && (cell2.x != x && cell2.y != y)) {
-									String cell1key = createKey(x, y, cell1.x, cell1.y);
-									int cell1d = board.dict.get(cell1key);
-									String cell2key = createKey(x, y, cell2.x, cell2.y);
-									int cell2d = board.dict.get(cell2key);
-									totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1))))
-											* (Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d] * probs[a][b];
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							for (int c = a; c < board.board.length; c++) {
+								for (int d = b; d < board.board.length; d++) {
+									cell cell2 = board.board[c][d];
+									if (cell2.state && (cell2.x != x && cell2.y != y)) {
+										String cell1key = createKey(x, y, cell1.x, cell1.y);
+										int cell1d = board.dict.get(cell1key);
+										String cell2key = createKey(x, y, cell2.x, cell2.y);
+										int cell2d = board.dict.get(cell2key);
+										totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1))))
+												* (Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d] * probs[a][b];
+									}
 								}
 							}
 						}
 					}
 				}
-			}
 			}else {
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
@@ -521,6 +521,8 @@ public class bot4 {
 					}
 				}
 			}
+			
+			
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
@@ -558,39 +560,39 @@ public class bot4 {
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
-			for (int a = 0; a < board.board.length; a++) {
-				for (int b = 0; b < board.board.length; b++) {
-					cell cell1 = board.board[a][b];
-					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-						for (int c = a; c < board.board.length; c++) {
-							for (int d = b; d < board.board.length; d++) {
-								cell cell2 = board.board[c][d];
-								if (cell2.state && (cell2.x != x && cell2.y != y)) {
-									String cell1key = createKey(x, y, cell1.x, cell1.y);
-									int cell1d = board.dict.get(cell1key);
-									String cell2key = createKey(x, y, cell2.x, cell2.y);
-									int cell2d = board.dict.get(cell2key);
-									totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
-											* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d]
-											* probs[a][b];
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							for (int c = a; c < board.board.length; c++) {
+								for (int d = b; d < board.board.length; d++) {
+									cell cell2 = board.board[c][d];
+									if (cell2.state && (cell2.x != x && cell2.y != y)) {
+										String cell1key = createKey(x, y, cell1.x, cell1.y);
+										int cell1d = board.dict.get(cell1key);
+										String cell2key = createKey(x, y, cell2.x, cell2.y);
+										int cell2d = board.dict.get(cell2key);
+										totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
+												* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d]
+														* probs[a][b];
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-		}else {
-			for (int a = 0; a < board.board.length; a++) {
-				for (int b = 0; b < board.board.length; b++) {
-					cell cell1 = board.board[a][b];
-					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-						String cell1key = createKey(x, y, cell1.x, cell1.y);
-						int cell1d = board.dict.get(cell1key);
-						totalProb += (1.0 - (Math.pow(Math.E, (-alpha * (cell1d - 1))))) * probs[a][b];
+			}else {
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							String cell1key = createKey(x, y, cell1.x, cell1.y);
+							int cell1d = board.dict.get(cell1key);
+							totalProb += (1.0 - (Math.pow(Math.E, (-alpha * (cell1d - 1))))) * probs[a][b];
+						}
 					}
 				}
 			}
-		}
 			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
