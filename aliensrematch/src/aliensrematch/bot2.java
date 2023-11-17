@@ -66,8 +66,8 @@ public class bot2 {
 
 		// initialize crew probabilities
 		initCrewProbs();
-		
-		
+
+
 		// set destination cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
@@ -129,7 +129,7 @@ public class bot2 {
 					queue.add(curr.up);
 				}
 			}
-			
+
 			if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down))
 					&& (!visited.contains(curr.down)) && (curr.down.palien == 0)) {
 				queue.add(curr.down);
@@ -143,7 +143,7 @@ public class bot2 {
 					queue.add(curr.down);
 				}
 			}
-			
+
 			if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left))
 					&& (!visited.contains(curr.left)) && (curr.left.palien == 0)) {
 				queue.add(curr.left);
@@ -157,7 +157,7 @@ public class bot2 {
 					queue.add(curr.left);
 				}
 			}
-			
+
 			if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right))
 					&& (!visited.contains(curr.right)) && (curr.right.palien == 0)) {
 				queue.add(curr.right);
@@ -171,7 +171,7 @@ public class bot2 {
 					queue.add(curr.right);
 				}
 			}
-			
+
 			// add current node to the visited fringe
 			visited.add(curr);
 
@@ -206,6 +206,9 @@ public class bot2 {
 			path.push(board.board[currx][curry]);
 			// get next parent
 			next = board.board[currx][curry].parent;
+			if(next==null) {
+				break;
+			}
 			currx = next.x;
 			curry = next.y;
 			// set parent to null so we don't run into problems the next runs
@@ -640,7 +643,7 @@ public class bot2 {
 	// breaks ties at random
 	cell findMaxCrew() {
 		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
-		
+
 		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
@@ -663,8 +666,8 @@ public class bot2 {
 				// nothing if this cell has a lower probability
 			}
 		}
-		
-		
+
+
 		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;
@@ -682,6 +685,15 @@ public class bot2 {
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
 		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+	}
+
+
+	void wipeParents() {
+		for (cell[] cellr : board.board) {
+			for (cell cell : cellr) {
+				cell.parent = null;
+			}
+		}
 	}
 
 
@@ -759,6 +771,7 @@ public class bot2 {
 				ret[1]=step;
 				return ret;
 			}
+			wipeParents();
 
 		}
 

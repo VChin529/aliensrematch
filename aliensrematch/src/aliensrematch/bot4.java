@@ -21,7 +21,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(50);
+		board = new board(30);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
