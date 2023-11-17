@@ -20,22 +20,18 @@ public class bot4 {
 		// initialize k and alpha values
 		this.k = k;
 		this.alpha = alpha;
-
 		// generate board dimension 50x50
-		board = new board(50);
-
+		board = new board(30);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
 		this.y = curr.y;
-
 		// generate 1 alien not within bot scanner range
 		alien = new alien(board);
 		while (alienScanCoord(alien.x, alien.y)) {
 			board.board[alien.x][alien.y].alien = false;
 			alien = new alien(board);
 		}
-
 		// initialize alien probabilities
 		double scanSize = scanRadiusBlocks(); // keeps track of how many open cells are in alien scan zone
 		if (debug == 1) {
@@ -53,23 +49,19 @@ public class bot4 {
 				}
 			}
 		}
-
 		// generate crewmembers
 		// if in the same position as bot, redo
 		crewmember1 = new crewmember(board);
 		while (x == crewmember1.x && y == crewmember1.y) {
 			crewmember1.generateCrewmember();
 		}
-
 		crewmember2 = new crewmember(board);
 		while ((x == crewmember2.x && y == crewmember2.y)
 				|| (crewmember1.x == crewmember2.x && crewmember1.y == crewmember2.y)) {
 			crewmember2.generateCrewmember();
 		}
-
 		// initialize crew probabilities
 		initCrewProbs();
-
 		// set destination cell to a random position on the board
 		dest = board.randomCell();
 		while (dest.x == x && dest.y == y) {
@@ -90,84 +82,97 @@ public class bot4 {
 	Stack<cell> findPath() {
 		// create fringes
 		Stack<cell> path = new Stack<>();
-
 		// find the cell we want to go to
 		// highest crewmate probability
 		dest = findMaxCrew();
-
+		Queue<cell> queue = new LinkedList<cell>();
+		ArrayList<cell> visited = new ArrayList<cell>();
+		// add our current cell to the fringe
 		cell curr = board.board[x][y];
-		String key = createKey(x, y, dest.x, dest.y);
-
-		// if we are at the position we want to go to, return our position
-		if (board.dict.get(key) == 0) {
+		queue.add(curr);
+		while (!queue.isEmpty()) {
+			// check if we are at the crewmate
+			curr = queue.poll();
+			if ((curr.x == dest.x) && curr.y == dest.y) {
+				if (debug == 1) {
+					System.out.println("we made it");
+				}
+				return getPath();
+			}
+			if (debug == 1) {
+				System.out.println("dest = " + dest.x + " " + dest.y);
+			}
+			// add neighbors to fringe if they are valid and not already visited
+			if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
+					&& (!visited.contains(curr.up)) && (curr.up.palien == 0)) {
+				queue.add(curr.up);
+				if (debug == 1) {
+					System.out.println("adding" + curr.up.x + " " + curr.up.y);
+				}
+				curr.up.parent = curr;
+			}
+			if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down))
+					&& (!visited.contains(curr.down)) && (curr.down.palien == 0)) {
+				queue.add(curr.down);
+				if (debug == 1) {
+					System.out.println("adding" + curr.down.x + " " + curr.down.y);
+				}
+				curr.down.parent = curr;
+			}
+			if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left))
+					&& (!visited.contains(curr.left)) && (curr.left.palien == 0)) {
+				queue.add(curr.left);
+				if (debug == 1) {
+					System.out.println("adding" + curr.left.x + " " + curr.left.y);
+				}
+				curr.left.parent = curr;
+			}
+			if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right))
+					&& (!visited.contains(curr.right)) && (curr.right.palien == 0)) {
+				queue.add(curr.right);
+				if (debug == 1) {
+					System.out.println("adding" + curr.right.x + " " + curr.right.y);
+				}
+				curr.right.parent = curr;
+			}
+			// add current node to the visited fringe
+			visited.add(curr);
+		}
+		dest = curr;
+		if (dest == board.board[x][y]) {
 			path.push(curr);
 			return path;
 		}
-
 		if (debug == 1) {
-			System.out.println("Were pathing to: x" + dest.x + " y:" + dest.y + " With probability: " + dest.pcrew);
+			System.out.println("dest = " + dest.x + " " + dest.y);
 		}
-
-		cell ret = curr;
-		// collect all cells we can possibly move to
-		// our unblocked neighbors without alien probability = 0
-		// if no cells meet these conditions, we return ourself, so we stay in place
-		ArrayList<cell> possCells = new ArrayList<>();
-		if (curr.up != null && curr.up.state && curr.up.palien == 0) {
-			possCells.add(curr.up);
-		}
-		if (curr.down != null && curr.down.state && curr.down.palien == 0) {
-			possCells.add(curr.down);
-		}
-		if (curr.left != null && curr.left.state && curr.left.palien == 0) {
-			possCells.add(curr.left);
-		}
-		if (curr.right != null && curr.right.state && curr.right.palien == 0) {
-			possCells.add(curr.right);
-		}
-
-		// iterate through all possible cells
-		// find the one with the shortest distance
-		int minDistance = Integer.MAX_VALUE;
-		for (int i = 0; i < possCells.size(); i++) {
-			key = createKey(possCells.get(i).x, possCells.get(i).y, dest.x, dest.y);
-			if (minDistance > board.dict.get(key)) {
-				ret = possCells.get(i);
-				minDistance = board.dict.get(key);
-			}
-		}
-
-		if (debug == 1) {
-			System.out.println(ret.x + " " + ret.y + " is next step");
-		}
-
-		path.push(ret);
-		return path;
-
+		return getPath();
 	}
 
 	// trace back parent pointers to return the shortest path as a stack
 	Stack<cell> getPath() {
 		Stack<cell> path = new Stack<>();
-
 		// get current coordinates
 		int currx = dest.x;
 		int curry = dest.y;
-
 		// get parent of current node
 		cell next = board.board[dest.x][dest.y].parent;
-
 		do {
+			if (debug == 1) {
+				System.out.println("Our dest is : " + dest.x + " " + dest.y);
+				System.out.println("cell x " + currx + " cell y " + curry);
+			}
 			// add parent to stack
 			path.push(board.board[currx][curry]);
 			// get next parent
 			next = board.board[currx][curry].parent;
+			if (next == null) {
+				break;
+			}
 			currx = next.x;
 			curry = next.y;
 			// set parent to null so we don't run into problems the next runs
-
 		} while (board.board[currx][curry].parent != null);
-
 		return path;
 	}
 
@@ -190,7 +195,6 @@ public class bot4 {
 			}
 			i_end++;
 		}
-
 		int j_start = y;
 		for (int l = 0; l < k; l++) {
 			if (j_start <= 0) {
@@ -205,7 +209,6 @@ public class bot4 {
 			}
 			j_end++;
 		}
-
 		// counts number of cells
 		double count = 0;
 		if (debug == 1) {
@@ -218,7 +221,6 @@ public class bot4 {
 				}
 			}
 		}
-
 		return count;
 	}
 
@@ -251,7 +253,6 @@ public class bot4 {
 			}
 			i_end++;
 		}
-
 		int j_start = y;
 		for (int l = 0; l < k; l++) {
 			if (j_start <= 0) {
@@ -266,7 +267,6 @@ public class bot4 {
 			}
 			j_end++;
 		}
-
 		// checks within these bounds for alien
 		for (int i = i_start; i <= i_end; i++) {
 			for (int j = j_start; j <= j_end; j++) {
@@ -283,9 +283,7 @@ public class bot4 {
 		if (debug == 1) {
 			System.out.println("BOT MOVE");
 		}
-
 		double beta = 0.0; // to calculate normalization constant
-
 		// scanner goes off
 		if (alienScan()) {
 			ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
@@ -302,7 +300,6 @@ public class bot4 {
 					}
 				}
 			}
-
 			for (cell curr : cells) {
 				/*
 				 * System.out.println("cells list"); System.out.println("cell coords: " + curr.x
@@ -313,7 +310,6 @@ public class bot4 {
 				// System.out.println("probability after division:" + curr.palien);
 				beta += curr.palien;
 			}
-
 			// scanner does not go off
 		} else {
 			// the new cells we just moved into now have a probability of 0
@@ -327,7 +323,6 @@ public class bot4 {
 				}
 			}
 		}
-
 		// normalize
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
@@ -335,7 +330,6 @@ public class bot4 {
 				curr.palien = (1.0 / beta) * curr.palien;
 			}
 		}
-
 	}
 
 	// calculate alien probabilities when aliens move
@@ -343,7 +337,6 @@ public class bot4 {
 		if (debug == 1) {
 			System.out.println("ALIEN MOVE");
 		}
-
 		// copying old probabilities for reference
 		double[][] probs = new double[board.board.length][board.board.length];
 		for (int i = 0; i < board.board.length; i++) {
@@ -351,14 +344,11 @@ public class bot4 {
 				probs[i][j] = board.board[i][j].palien;
 			}
 		}
-
 		double beta = 0.0; // to calculate normalization constant
-
 		if (alienScan()) {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-
 					if ((x == i && y == j) || !alienScanCoord(i, j)) {
 						curr.palien = 0;
 					} else if (curr.state) {
@@ -383,12 +373,10 @@ public class bot4 {
 					beta += curr.palien;
 				}
 			}
-
 		} else {
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-
 					if ((x == i && y == j) || alienScanCoord(i, j)) {
 						curr.palien = 0;
 					} else if (curr.state) {
@@ -414,7 +402,6 @@ public class bot4 {
 				}
 			}
 		}
-
 		// normalize
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
@@ -422,25 +409,20 @@ public class bot4 {
 				curr.palien = (1.0 / beta) * curr.palien;
 			}
 		}
-
 	}
 
 	// set initial crewmember probabilities
 	void initCrewProbs() {
 		ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
-
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
-
 				// if closed cell
 				if (!curr.state) {
 					curr.pcrew = 0;
-
 					// if bot position
 				} else if (i == x && j == y) {
 					curr.pcrew = 0;
-
 					// open cell not in bot position
 					// this is a valid cell. collect these
 				} else {
@@ -448,7 +430,6 @@ public class bot4 {
 				}
 			}
 		}
-
 		// divide probability equally amongst valid cells
 		for (cell curr : cells) {
 			curr.pcrew = 1.0 / cells.size();
@@ -459,33 +440,27 @@ public class bot4 {
 	// beep depends on location of both crewmembers
 	boolean beep() {
 		double prob = 0.0;
-
 		// getting distance from our position to the crewmember
 		if (crewmember1 != null && crewmember2 != null) {
 			// find the probability of beep from crewmember1 && crewmember2
 			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
 			double prob1 = 1.0 - (Math.pow(Math.E, (-alpha * (d1 - 1))));
-
 			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
 			double prob2 = 1.0 - (Math.pow(Math.E, (-alpha * (d2 - 1))));
-
 			// final beep probability is from one OR the other
 			// 1 - and
 			prob = 1.0 - (prob1 * prob2);
-
 		} else if (crewmember1 != null) { // crewmember2 is null, we are looking for crew1
 			String current = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
-
 		} else { // crewmember1 is null, we are looking for crew2
 			String current = createKey(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		}
-
 		// return if random number is within this probability
 		double rand = (double) Math.random();
 		return (rand <= prob);
@@ -499,98 +474,138 @@ public class bot4 {
 		if (isDestination()) {
 			board.board[x][y].pcrew = 0.0;
 		}
-
+		double[][] probs = new double[board.board.length][board.board.length];
+		for (int i = 0; i < board.board.length; i++) {
+			for (int j = 0; j < board.board.length; j++) {
+				probs[i][j] = board.board[i][j].pcrew;
+			}
+		}
 		// if the bot gets a beep
 		if (beep()) {
 			if (debug == 1) {
 				System.out.println("BEEP!");
 			}
-
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
-
+			double totalProb = 0.0;
+			for (int a = 0; a < board.board.length; a++) {
+				for (int b = 0; b < board.board.length; b++) {
+					cell cell1 = board.board[a][b];
+					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+						for (int c = a; c < board.board.length; c++) {
+							for (int d = b; d < board.board.length; d++) {
+								cell cell2 = board.board[c][d];
+								if (cell2.state && (cell2.x != x && cell2.y != y)) {
+									String cell1key = createKey(x, y, cell1.x, cell1.y);
+									int cell1d = board.dict.get(cell1key);
+									String cell2key = createKey(x, y, cell2.x, cell2.y);
+									int cell2d = board.dict.get(cell2key);
+									totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1))))
+											* (Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d] * probs[a][b];
+								}
+							}
+						}
+					}
+				}
+			}
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					cell curr = board.board[i][j];
-					if (curr.state) {
+					cell curr1 = board.board[i][j];
+					if (curr1.state && !(x == i && y == j)) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
-						// are we supposed to get where the crewmates are
-						String current = createKey(x, y, i, j);
-						int d = board.dict.get(current);
-
-						if(curr.pcrew==0) {
-							curr.pcrew=0;
-
+						String temp1 = createKey(x, y, i, j);
+						int d1 = board.dict.get(temp1);
+						double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
+						if (curr1.pcrew == 0) {
+							curr1.pcrew = 0;
 							// multiply probability of crewmember in cell * probability of beep | crewmember
-						}else if (crewmember1 != null && crewmember2 != null&&d!=0) {
+						} else if (crewmember1 != null && crewmember2 != null && d1 != 0) {
 							// multiply by probability of both beeps
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							
-							curr.pcrew*= 1-((1.0-beepProb)*(1.0-beepProb));
-							
-						} else if(d!=0){
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							curr.pcrew *= (beepProb);
+							// sum up all the ways we can get a beep
+							curr1.pcrew *= (beepProb1 / totalProb);
+						} else if (d1 != 0) {
+							curr1.pcrew *= (beepProb1);
 						}
-						beta += curr.pcrew;
+						beta += curr1.pcrew;
 					}
-
 				}
 			}
-
 			// normalize
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
-
 				}
 			}
-
 			// if the bot does not get a beep
 		} else {
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
-
+			double totalProb = 0.0;
+			for (int a = 0; a < board.board.length; a++) {
+				for (int b = 0; b < board.board.length; b++) {
+					cell cell1 = board.board[a][b];
+					if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+						for (int c = a; c < board.board.length; c++) {
+							for (int d = b; d < board.board.length; d++) {
+								cell cell2 = board.board[c][d];
+								if (cell2.state && (cell2.x != x && cell2.y != y)) {
+									String cell1key = createKey(x, y, cell1.x, cell1.y);
+									int cell1d = board.dict.get(cell1key);
+									String cell2key = createKey(x, y, cell2.x, cell2.y);
+									int cell2d = board.dict.get(cell2key);
+									totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
+											* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1)))) * probs[c][d]
+											* probs[a][b];
+								}
+							}
+						}
+					}
+				}
+			}
 			// add up all probabilities and normalize
 			double beta = 0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
-					cell curr = board.board[i][j];
-					if (curr.state) {
-						String current = createKey(x, y, i, j);
-						int d = board.dict.get(current);
-						
-						if(curr.pcrew==0) {
-							curr.pcrew=0;
-							
-						}else if (crewmember1 != null && crewmember2 != null && d!=0) {
+					cell curr1 = board.board[i][j];
+					if (curr1.state) {
+						// find the distance from us to the cell
+						// probability that the beep went off if the crewmember was in that cell
+						String temp1 = createKey(x, y, i, j);
+						int d1 = board.dict.get(temp1);
+						double beepProb1 = 1.0 - Math.pow(Math.E, (-alpha * (d1 - 1)));
+						if (curr1.pcrew == 0) {
+							curr1.pcrew = 0;
+							// multiply probability of crewmember in cell * probability of beep | crewmember
+						} else if (crewmember1 != null && crewmember2 != null && d1 != 0) {
 							// multiply by probability of both beeps
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							curr.pcrew*= (1.0-(1.0-(1.0-beepProb)*(1.0-beepProb)));
-
-						} else if(d != 0){
-							double beepProb = Math.pow(Math.E, (-alpha * (d - 1)));
-							curr.pcrew *= (1.0 - beepProb);
+							// sum up all the ways we can get a beep
+							curr1.pcrew *= (beepProb1 / totalProb);
+						} else if (d1 != 0) {
+							double beepProb = Math.pow(Math.E, (-alpha * (d1 - 1)));
+							curr1.pcrew *= (1.0 - beepProb);
 						}
-						beta += curr.pcrew;
+						beta += curr1.pcrew;
 					}
 				}
 			}
-
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
-
 				}
 			}
-
 		}
+	}
 
+	void wipeParents() {
+		for (cell[] cellr : board.board) {
+			for (cell cell : cellr) {
+				cell.parent = null;
+			}
+		}
 	}
 
 	// finds cell with highest crewmate probability
@@ -598,11 +613,9 @@ public class bot4 {
 	// breaks ties at random
 	cell findMaxCrew() {
 		ArrayList<cell> max = new ArrayList<>(); // to collect all cells with max probability
-
 		// add our current destination cell to the list
 		max.add(dest);
 		boolean stay = true;
-
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
@@ -624,12 +637,10 @@ public class bot4 {
 				// nothing if this cell has a lower probability
 			}
 		}
-
 		// if we never found a better cell, keep going to our current destination cell
 		if (stay == true) {
 			return dest;
 		}
-
 		// we have a better probability somewhere else
 		// return a random cell from our list
 		int pos = (int) (Math.random() * max.size());
@@ -647,16 +658,13 @@ public class bot4 {
 		int[] ret = new int[2];
 		int saved = 0; // # of crewmembers saved
 		int step = 0; // # of steps taken
-
 		// keep looping
 		// we will break manually once we find the crewmember
 		while (true) {
-
 			if (debug == 1) {
 				printBoard();
 				System.out.println();
 			}
-
 			// get path
 			// if no path, return
 			Stack<cell> path = findPath();
@@ -666,43 +674,41 @@ public class bot4 {
 				ret[1] = step;
 				return ret;
 			}
-
 			// look at next move ONLY
 			cell curr = path.pop();
 			// advance bot
 			x = curr.x;
 			y = curr.y;
 			step++;
-
 			// update alien probabilities
 			botMoveAlienProbability();
-
 			if (debug == 1) {
 				printBoard();
 				System.out.println();
 			}
-
 			// alien check
 			// if caught by alien, return
 			if (curr.alien == true) {
 				ret[0] = saved;
 				ret[1] = step;
+				if (debug == 2) {
+					System.out.println("DIED" + step);
+				}
 				return ret;
-
 			}
-
 			// crewmember check
 			// saved crewmember, increment saved count
 			// if we have saved both crewmembers, return
 			if (isDestination()) {
 				saved++;
-
 				if (saved == 2) {
 					ret[0] = saved;
 					ret[1] = step;
+					if (debug == 2) {
+						System.out.println("SAVED" + step);
+					}
 					return ret;
 				}
-
 				// turn off the crewmember we just saved
 				if (crewmember1 != null && x == crewmember1.x && y == crewmember1.y) {
 					crewmember1 = null;
@@ -710,24 +716,22 @@ public class bot4 {
 					crewmember2 = null;
 				}
 			}
-
 			// move aliens
 			alien.move();
-
 			alienMoveAlienProbability();
-
 			// update crewmember probabilities
 			crewmateProbability();
-
 			// alien check
 			if (board.getCell(x, y).alien == true) {
 				ret[0] = saved;
 				ret[1] = step;
+				if (debug == 2) {
+					System.out.println("DIED" + step);
+				}
 				return ret;
 			}
-
+			wipeParents();
 		}
-
 	}
 
 	// utility function
@@ -735,16 +739,13 @@ public class bot4 {
 	// probabilities
 	void printBoard() {
 		DecimalFormat df = new DecimalFormat("0.000");
-
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
 				cell curr = board.board[i][j];
-
 				if (curr.state == false) {
 					System.out.print("[XXX, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 					continue;
 				}
-
 				if (curr.alien == false) {
 					if ((i == x && j == y) && ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y)
 							|| (crewmember2 != null && i == crewmember2.x && j == crewmember2.y))) {
@@ -762,7 +763,6 @@ public class bot4 {
 					}
 					System.out.print("[OOO, " + df.format(curr.palien) + ", " + df.format(curr.pcrew) + "]  ");
 					continue;
-
 				} else {
 					if ((i == x && j == y) && ((crewmember1 != null && i == crewmember1.x && j == crewmember1.y)
 							|| (crewmember2 != null && i == crewmember2.x && j == crewmember2.y))) {
