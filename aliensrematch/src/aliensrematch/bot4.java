@@ -21,7 +21,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(10);
+		board = new board(5);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -413,6 +413,8 @@ public class bot4 {
 
 	// set initial crewmember probabilities
 	void initCrewProbs() {
+		board.pairs();
+
 		ArrayList<cell> cells = new ArrayList<cell>(); // to contain cells whose probability we need to update later
 		for (int i = 0; i < board.board.length; i++) {
 			for (int j = 0; j < board.board.length; j++) {
@@ -434,7 +436,6 @@ public class bot4 {
 		for (cell curr : cells) {
 			curr.pcrew = 1.0 / cells.size();
 		}
-		board.pairs();
 	}
 
 	// sets off crewmember detection beep
@@ -489,74 +490,54 @@ public class bot4 {
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
+			double beta = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
-				for (int a = 0; a < board.board.length; a++) {
-					for (int b = 0; b < board.board.length; b++) {
-						cell cell1 = board.board[a][b];
-						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-							for (int c = a; c < board.board.length; c++) {
-								for (int d = b; d < board.board.length; d++) {
-									cell cell2 = board.board[c][d];
-									if (cell2.state && (cell2.x != x && cell2.y != y)) {
-										String cell1key = createKey(x, y, cell1.x, cell1.y);
-										int cell1d = board.dict.get(cell1key);
-										String cell2key = createKey(x, y, cell2.x, cell2.y);
-										int cell2d = board.dict.get(cell2key);
-										double beep1 = Math.pow(Math.E, (-alpha) * (cell1d-1));
-										double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
-										String cellKeys= createKey(a,b,c,d);
-										double value = board.pcellsDict.get(cellKeys);
-										value+=(beep1 +beep2 -(beep1*beep2));
-										board.pcellsDict.put(cellKeys,value);
-										totalProb+=value;
-									}
-								}
-							}
+				for (String key: board.pcellsDict.keySet()) {
+					cell cell1 = board.board[Integer.parseInt(key.substring(0,1))][Integer.parseInt(key.substring(1,2))];
+					if (cell1.x != x && cell1.y != y) {
+						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						int cell1d = board.dict.get(cell1key);
+						double beep1 = Math.pow(Math.E, (-alpha) * (cell1d-1));
+
+						cell cell2 = board.board[Integer.parseInt(key.substring(2,3))][Integer.parseInt(key.substring(3,4))];
+						if (cell2.x != x && cell2.y != y) {
+							String cell2key = createKey(x, y, cell2.x, cell2.y);
+							int cell2d = board.dict.get(cell2key);
+							double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
+
+							double value = board.pcellsDict.get(key);
+							value*=(beep1 + beep2 -(beep1*beep2));
+							board.pcellsDict.replace (key,value);
+							totalProb+=value;
 						}
 					}
 				}
-					for (int a = 0; a < board.board.length; a++) {
-						for (int b = 0; b < board.board.length; b++) {
-							cell cell1 = board.board[a][b];
-							if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-								for (int c = a; c < board.board.length; c++) {
-									for (int d = b; d < board.board.length; d++) {
-										cell cell2 = board.board[c][d];
-										if (cell2.state && (cell2.x != x && cell2.y != y)) {
-											String cellKeys = createKey(a, b, c, d);
-											double value = board.pcellsDict.get(cellKeys);
-											value /=totalProb;
-											board.pcellsDict.put(cellKeys,value);
-										}
-									}
+				for (String key : board.pcellsDict.keySet()) {
+					double value = board.pcellsDict.get(key);
+					board.pcellsDict.replace(key, value/totalProb);
+				}
+
+
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell curr = board.board[a][b];
+						double newprob = 0.0;
+						if (curr.state && (curr.x != x && curr.y != y)) {
+							for (String key : board.pcellsDict.keySet()) {
+								if ((Integer.parseInt(key.substring(0,1)) == a && Integer.parseInt(key.substring(1,2)) == b)
+										|| (Integer.parseInt(key.substring(2,3)) == a && Integer.parseInt(key.substring(3,4)) == b)) {
+									newprob += board.pcellsDict.get(key);
 								}
 							}
 						}
-					}
-				for (int a = 0; a < board.board.length; a++) {
-					for (int b = 0; b < board.board.length; b++) {
-						cell cell1 = board.board[a][b];
-						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-							for (int c = a; c < board.board.length; c++) {
-								for (int d = b; d < board.board.length; d++) {
-									cell cell2 = board.board[c][d];
-									if (cell2.state && (cell2.x != x && cell2.y != y)) {
-										String cellKeys = createKey(a, b, c, d);
-										double value = board.pcellsDict.get(cellKeys);
-										if(cell1.pcrew!=0 && cell2.pcrew!=0) {//idk
-											cell1.pcrew += value;
-											cell2.pcrew += value;
-										}else if(cell1.pcrew==0){
-											cell2.pcrew += value;
-										}else{
-											cell1.pcrew += value;
-										}
-									}
-								}
-							}
+						if (curr.pcrew != 0.0) {
+							curr.pcrew = newprob;
+							beta += curr.pcrew;
 						}
 					}
 				}
+
+				// 1 crewmember case
 			}else {
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
@@ -568,29 +549,29 @@ public class bot4 {
 						}
 					}
 				}
-			}
-			
-			
-			double beta = 0;
-			for (int i = 0; i < board.board.length; i++) {
-				for (int j = 0; j < board.board.length; j++) {
-					cell curr1 = board.board[i][j];
-					if (curr1.state && !(x == i && y == j)) {
-						// find the distance from us to the cell
-						// probability that the beep went off if the crewmember was in that cell
-						String temp1 = createKey(x, y, i, j);
-						int d1 = board.dict.get(temp1);
-						double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
-						if (curr1.pcrew == 0) {
-							curr1.pcrew = 0;
-							// multiply probability of crewmember in cell * probability of beep | crewmembe
-						} else if (d1 != 0) {
-							curr1.pcrew *= (beepProb1/totalProb);
+
+				for (int i = 0; i < board.board.length; i++) {
+					for (int j = 0; j < board.board.length; j++) {
+						cell curr1 = board.board[i][j];
+						if (curr1.state && !(x == i && y == j)) {
+							// find the distance from us to the cell
+							// probability that the beep went off if the crewmember was in that cell
+							String temp1 = createKey(x, y, i, j);
+							int d1 = board.dict.get(temp1);
+							double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
+							if (curr1.pcrew == 0) {
+								curr1.pcrew = 0;
+								// multiply probability of crewmember in cell * probability of beep | crewmembe
+							} else if (d1 != 0) {
+								curr1.pcrew *= (beepProb1/totalProb);
+							}
+							beta += curr1.pcrew;
 						}
-						beta += curr1.pcrew;
 					}
 				}
+
 			}
+
 			// normalize
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
@@ -598,79 +579,62 @@ public class bot4 {
 					curr.pcrew = (1.0 / beta) * curr.pcrew;
 				}
 			}
+
+
+
+
 			// if the bot does not get a beep
 		} else {
-			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
 			double totalProb = 0.0;
+			double beta = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
-				for (int a = 0; a < board.board.length; a++) {
-					for (int b = 0; b < board.board.length; b++) {
-						cell cell1 = board.board[a][b];
-						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-							for (int c = a; c < board.board.length; c++) {
-								for (int d = b; d < board.board.length; d++) {
-									cell cell2 = board.board[c][d];
-									if (cell2.state && (cell2.x != x && cell2.y != y)) {
-										String cell1key = createKey(x, y, cell1.x, cell1.y);
-										int cell1d = board.dict.get(cell1key);
-										String cell2key = createKey(x, y, cell2.x, cell2.y);
-										int cell2d = board.dict.get(cell2key);
-										double beep1 = (1.0-Math.pow(Math.E, (-alpha) * (cell1d-1)));
-										double beep2 = (1.0-Math.pow(Math.E, (-alpha) * (cell2d-1)));
-										String cellKeys= createKey(a,b,c,d);
-										double value = board.pcellsDict.get(cellKeys);
-										value+=((beep1*beep2));
-										board.pcellsDict.put(cellKeys,value);
-										totalProb+=value;
-									}
-								}
-							}
+				for (String key: board.pcellsDict.keySet()) {
+					cell cell1 = board.board[Integer.parseInt(key.substring(0,1))][Integer.parseInt(key.substring(1,2))];
+					if (cell1.x != x && cell1.y != y) {
+						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						int cell1d = board.dict.get(cell1key);
+						double beep1 = 1.0 - Math.pow(Math.E, (-alpha) * (cell1d-1));
+
+						cell cell2 = board.board[Integer.parseInt(key.substring(2,3))][Integer.parseInt(key.substring(3,4))];
+						if (cell2.x != x && cell2.y != y) {
+							String cell2key = createKey(x, y, cell2.x, cell2.y);
+							int cell2d = board.dict.get(cell2key);
+							double beep2 = 1.0 - Math.pow(Math.E, (-alpha) * (cell2d-1));
+
+							double value = board.pcellsDict.get(key);
+							value*=(beep1*beep2);
+							board.pcellsDict.replace(key,value);
+							totalProb+=value;
 						}
 					}
 				}
+				for (String key : board.pcellsDict.keySet()) {
+					double value = board.pcellsDict.get(key);
+					board.pcellsDict.replace(key, value/totalProb);
+				}
+
+
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
-						cell cell1 = board.board[a][b];
-						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-							for (int c = a; c < board.board.length; c++) {
-								for (int d = b; d < board.board.length; d++) {
-									cell cell2 = board.board[c][d];
-									if (cell2.state && (cell2.x != x && cell2.y != y)) {
-										String cellKeys = createKey(a, b, c, d);
-										double value = board.pcellsDict.get(cellKeys);
-										value /=totalProb;
-										board.pcellsDict.put(cellKeys,value);
-									}
+						cell curr = board.board[a][b];
+						double newprob = 0.0;
+						if (curr.state && (curr.x != x && curr.y != y)) {
+							for (String key : board.pcellsDict.keySet()) {
+								if ((Integer.parseInt(key.substring(0,1)) == a && Integer.parseInt(key.substring(1,2)) == b)
+										|| (Integer.parseInt(key.substring(2,3)) == a && Integer.parseInt(key.substring(3,4)) == b)) {
+									newprob += board.pcellsDict.get(key);
 								}
 							}
 						}
-					}
-				}
-				for (int a = 0; a < board.board.length; a++) {
-					for (int b = 0; b < board.board.length; b++) {
-						cell cell1 = board.board[a][b];
-						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
-							for (int c = a; c < board.board.length; c++) {
-								for (int d = b; d < board.board.length; d++) {
-									cell cell2 = board.board[c][d];
-									if (cell2.state && (cell2.x != x && cell2.y != y)) {
-										String cellKeys = createKey(a, b, c, d);
-										double value = board.pcellsDict.get(cellKeys);
-										if(cell1.pcrew!=0 && cell2.pcrew!=0) {//idk
-											cell1.pcrew += value;
-											cell2.pcrew += value;
-										}else if(cell1.pcrew==0){
-											cell2.pcrew += value;
-										}else{
-											cell1.pcrew += value;
-										}
-									}
-								}
-							}
+						if (curr.pcrew != 0.0) {
+							curr.pcrew = newprob;
+							beta += curr.pcrew;
 						}
 					}
 				}
+
+				// 1 crewmember case
 			}else {
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
@@ -678,32 +642,34 @@ public class bot4 {
 						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
 							String cell1key = createKey(x, y, cell1.x, cell1.y);
 							int cell1d = board.dict.get(cell1key);
-							totalProb += (1.0 - (Math.pow(Math.E, (-alpha * (cell1d - 1))))) * probs[a][b];
+							totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1)))) * probs[a][b];
 						}
 					}
 				}
-			}
-			// add up all probabilities and normalize
-			double beta = 0;
-			for (int i = 0; i < board.board.length; i++) {
-				for (int j = 0; j < board.board.length; j++) {
-					cell curr1 = board.board[i][j];
-					if (curr1.state) {
-						// find the distance from us to the cell
-						// probability that the beep went off if the crewmember was in that cell
-						String temp1 = createKey(x, y, i, j);
-						int d1 = board.dict.get(temp1);
-						double beepProb1 = 1.0 - Math.pow(Math.E, (-alpha * (d1 - 1)));
-						if (curr1.pcrew == 0) {
-							curr1.pcrew = 0;
-							// multiply probability of crewmember in cell * probability of beep | crewmember
-						} else if (d1 != 0) {
-							curr1.pcrew *= (beepProb1/totalProb);
+
+				for (int i = 0; i < board.board.length; i++) {
+					for (int j = 0; j < board.board.length; j++) {
+						cell curr1 = board.board[i][j];
+						if (curr1.state && !(x == i && y == j)) {
+							// find the distance from us to the cell
+							// probability that the beep went off if the crewmember was in that cell
+							String temp1 = createKey(x, y, i, j);
+							int d1 = board.dict.get(temp1);
+							double beepProb1 = 1.0 - Math.pow(Math.E, (-alpha * (d1 - 1)));
+							if (curr1.pcrew == 0) {
+								curr1.pcrew = 0;
+								// multiply probability of crewmember in cell * probability of beep | crewmembe
+							} else if (d1 != 0) {
+								curr1.pcrew *= (beepProb1/totalProb);
+							}
+							beta += curr1.pcrew;
 						}
-						beta += curr1.pcrew;
 					}
 				}
+
 			}
+
+			// normalize
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];

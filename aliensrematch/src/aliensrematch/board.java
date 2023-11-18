@@ -135,9 +135,9 @@ public class board {
 					for (int x2 = x1; x2 < board.length; x2++) {
 						for (int y2 = y1; y2 < board.length; y2++) {
 							cell cell2=board[x2][y2];
-							String key = createKey(x1,y1,x2,y2);
-							if(cell2.state){
-								pcellsDict.put(key, cell1.pcrew * cell2.pcrew);
+							if (cell2.state) {
+								String key = createKey(x1,y1,x2,y2);
+								pcellsDict.put(key, 0.0);
 							}
 						}
 					}
@@ -145,7 +145,12 @@ public class board {
 			}
 		}
 
+		for (String key : pcellsDict.keySet()) {
+			pcellsDict.replace(key, 1.0/pcellsDict.size());
+		}
 	}
+
+
 	// returns a random cell that is not closed
 	// used to spawn location for alien, bot, crewmember
 	cell randomCell() {
