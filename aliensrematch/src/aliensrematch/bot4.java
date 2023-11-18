@@ -13,7 +13,7 @@ public class bot4 {
 	alien alien; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 0; // utility for debugging. ignore.
+	int debug = 1; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot4(int k, double alpha) {
@@ -21,7 +21,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(20);
+		board = new board(10);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -434,6 +434,7 @@ public class bot4 {
 		for (cell curr : cells) {
 			curr.pcrew = 1.0 / cells.size();
 		}
+		board.pairs();
 	}
 
 	// sets off crewmember detection beep
@@ -451,7 +452,7 @@ public class bot4 {
 			double prob2 = 1.0 - (Math.pow(Math.E, (-alpha * (d2 - 1))));
 			// final beep probability is from one OR the other
 			// 1 - and
-			prob = 1.0 - (prob1 * prob2);
+			prob = prob1+prob2 - (prob1*prob2);
 		} else if (crewmember1 != null) { // crewmember2 is null, we are looking for crew1
 			String current = createKey(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
@@ -501,8 +502,55 @@ public class bot4 {
 										int cell1d = board.dict.get(cell1key);
 										String cell2key = createKey(x, y, cell2.x, cell2.y);
 										int cell2d = board.dict.get(cell2key);
-										totalProb += (1 -(Math.pow(Math.E, (-alpha * (cell1d - 1))))
-												* (Math.pow(Math.E, (-alpha * (cell2d - 1))))) * probs[c][d] * probs[a][b];
+										double beep1 = Math.pow(Math.E, (-alpha) * (cell1d-1));
+										double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
+										String cellKeys= createKey(a,b,c,d);
+										double value = board.pcellsDict.get(cellKeys);
+										value+=(beep1 +beep2 -(beep1*beep2));
+										board.pcellsDict.put(cellKeys,value);
+										totalProb+=value;
+									}
+								}
+							}
+						}
+					}
+				}
+					for (int a = 0; a < board.board.length; a++) {
+						for (int b = 0; b < board.board.length; b++) {
+							cell cell1 = board.board[a][b];
+							if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+								for (int c = a; c < board.board.length; c++) {
+									for (int d = b; d < board.board.length; d++) {
+										cell cell2 = board.board[c][d];
+										if (cell2.state && (cell2.x != x && cell2.y != y)) {
+											String cellKeys = createKey(a, b, c, d);
+											double value = board.pcellsDict.get(cellKeys);
+											value /=totalProb;
+											board.pcellsDict.put(cellKeys,value);
+										}
+									}
+								}
+							}
+						}
+					}
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							for (int c = a; c < board.board.length; c++) {
+								for (int d = b; d < board.board.length; d++) {
+									cell cell2 = board.board[c][d];
+									if (cell2.state && (cell2.x != x && cell2.y != y)) {
+										String cellKeys = createKey(a, b, c, d);
+										double value = board.pcellsDict.get(cellKeys);
+										if(cell1.pcrew!=0 && cell2.pcrew!=0) {//idk
+											cell1.pcrew += value;
+											cell2.pcrew += value;
+										}else if(cell1.pcrew==0){
+											cell2.pcrew += value;
+										}else{
+											cell1.pcrew += value;
+										}
 									}
 								}
 							}
@@ -535,11 +583,7 @@ public class bot4 {
 						double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
 						if (curr1.pcrew == 0) {
 							curr1.pcrew = 0;
-							// multiply probability of crewmember in cell * probability of beep | crewmember
-						} else if (crewmember1 != null && crewmember2 != null && d1 != 0) {
-							// multiply by probability of both beeps
-							// sum up all the ways we can get a beep
-							curr1.pcrew *= (beepProb1 / totalProb);
+							// multiply probability of crewmember in cell * probability of beep | crewmembe
 						} else if (d1 != 0) {
 							curr1.pcrew *= (beepProb1/totalProb);
 						}
@@ -572,9 +616,55 @@ public class bot4 {
 										int cell1d = board.dict.get(cell1key);
 										String cell2key = createKey(x, y, cell2.x, cell2.y);
 										int cell2d = board.dict.get(cell2key);
-										totalProb += (1 -(1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1))))
-												* (1.0 - Math.pow(Math.E, (-alpha * (cell2d - 1))))) * probs[c][d]
-														* probs[a][b];
+										double beep1 = (1.0-Math.pow(Math.E, (-alpha) * (cell1d-1)));
+										double beep2 = (1.0-Math.pow(Math.E, (-alpha) * (cell2d-1)));
+										String cellKeys= createKey(a,b,c,d);
+										double value = board.pcellsDict.get(cellKeys);
+										value+=((beep1*beep2));
+										board.pcellsDict.put(cellKeys,value);
+										totalProb+=value;
+									}
+								}
+							}
+						}
+					}
+				}
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							for (int c = a; c < board.board.length; c++) {
+								for (int d = b; d < board.board.length; d++) {
+									cell cell2 = board.board[c][d];
+									if (cell2.state && (cell2.x != x && cell2.y != y)) {
+										String cellKeys = createKey(a, b, c, d);
+										double value = board.pcellsDict.get(cellKeys);
+										value /=totalProb;
+										board.pcellsDict.put(cellKeys,value);
+									}
+								}
+							}
+						}
+					}
+				}
+				for (int a = 0; a < board.board.length; a++) {
+					for (int b = 0; b < board.board.length; b++) {
+						cell cell1 = board.board[a][b];
+						if (cell1.state && (cell1.x != x && cell1.y != y)) {// do we care about it going into our cell?
+							for (int c = a; c < board.board.length; c++) {
+								for (int d = b; d < board.board.length; d++) {
+									cell cell2 = board.board[c][d];
+									if (cell2.state && (cell2.x != x && cell2.y != y)) {
+										String cellKeys = createKey(a, b, c, d);
+										double value = board.pcellsDict.get(cellKeys);
+										if(cell1.pcrew!=0 && cell2.pcrew!=0) {//idk
+											cell1.pcrew += value;
+											cell2.pcrew += value;
+										}else if(cell1.pcrew==0){
+											cell2.pcrew += value;
+										}else{
+											cell1.pcrew += value;
+										}
 									}
 								}
 							}
@@ -607,10 +697,6 @@ public class bot4 {
 						if (curr1.pcrew == 0) {
 							curr1.pcrew = 0;
 							// multiply probability of crewmember in cell * probability of beep | crewmember
-						} else if (crewmember1 != null && crewmember2 != null && d1 != 0) {
-							// multiply by probability of both beeps
-							// sum up all the ways we can get a beep
-							curr1.pcrew *= (beepProb1 / totalProb);
 						} else if (d1 != 0) {
 							curr1.pcrew *= (beepProb1/totalProb);
 						}

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import aliensrematch.bot1;
 
 public class aliensrematch {
-
 	public static void main(String[] args) {
 		System.out.println("running");
 		
@@ -18,7 +17,7 @@ public class aliensrematch {
 		int saved7 = 0, sumsteps7 = 0;
 		int ran5 = 0;
 
-		int iters=30;
+		int iters=10;
 		for (int i = 0; i < iters; i++) {
 			System.out.println(i);
 			/*System.out.println("bot1");
@@ -31,11 +30,11 @@ public class aliensrematch {
 			ret2 = bot2.run();*/
 			
 			System.out.println("bot3");
-			bot3 bot3 = new bot3(5, 0.05);
+			bot3 bot3 = new bot3(1, 0.05);
 			int[] ret3 = new int[2];
 			ret3 = bot3.run();
 			System.out.println("bot4");
-			bot4 bot4 = new bot4(5, 0.05);
+			bot4 bot4 = new bot4(1, 0.05);
 			int[] ret4 = new int[2];
 			ret4 = bot4.run();
 			/*System.out.println("bot5");

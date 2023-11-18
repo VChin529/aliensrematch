@@ -12,7 +12,7 @@ public class board {
 	cell[][] board; // 2D array of cells. this is the board.
 	int open = 0; // # of open cells in the board
 	HashMap<String, Integer> dict = new HashMap<>(); // to store distances from each cell to each cell
-
+	HashMap<String, Double> pcellsDict = new HashMap<>();
 	public board(int d) {
 		this.d = d;
 		board = new cell[d][d];
@@ -127,7 +127,25 @@ public class board {
 	}
 
 
+	void pairs(){
+		for(int x1 =0; x1<board.length; x1++){
+			for(int y1=0; y1<board.length; y1++) {
+				cell cell1 = board[x1][y1];
+				if (cell1.state) {
+					for (int x2 = x1; x2 < board.length; x2++) {
+						for (int y2 = y1; y2 < board.length; y2++) {
+							cell cell2=board[x2][y2];
+							String key = createKey(x1,y1,x2,y2);
+							if(cell2.state){
+								pcellsDict.put(key, cell1.pcrew * cell2.pcrew);
+							}
+						}
+					}
+				}
+			}
+		}
 
+	}
 	// returns a random cell that is not closed
 	// used to spawn location for alien, bot, crewmember
 	cell randomCell() {
