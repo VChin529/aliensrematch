@@ -23,7 +23,7 @@ public class bot3 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(10);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -652,7 +652,7 @@ public class bot3 {
 	// utility function to create string key for our dictionary
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+		return Integer.toString(x1) + "," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 	void wipeParents() {

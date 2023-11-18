@@ -150,6 +150,47 @@ public class board {
 		}
 	}
 
+	//find out which orientation the key is in our hastable, returns null if no such pair exists
+	String findKeypCrew(int x1, int y1, int x2, int y2){
+		String key1 = createKey(x1,y1,x2,y2);
+		String key2 = createKey(x2,y2,x1,y1);
+		if(pcellsDict.containsKey(key1)){
+			return key1;
+		}else if(pcellsDict.containsKey(key2)){
+			return key2;
+		}else{
+			return null;
+		}
+
+	}
+	String findKeyD(int x1, int y1, int x2, int y2){
+		String key1 = createKey(x1,y1,x2,y2);
+		String key2 = createKey(x2,y2,x1,y1);
+		if(dict.containsKey(key1)){
+			return key1;
+		}else if(dict.containsKey(key2)){
+			return key2;
+		}else{
+			return null;
+		}
+
+	}
+
+	//given a cell will return all cells paired with it that are not zero
+	ArrayList<cell> getallCellPairs(cell cell){
+		ArrayList<cell> ret = new ArrayList<cell>();
+		for(int i =0; i<board.length; i++){
+			for(int j=0; j<board.length; j++){
+				if(board[i][j].state) {
+					String key = findKeypCrew(cell.x, cell.y, i, j);
+					if(key!=null){
+						ret.add(board[i][j]);
+					}
+				}
+			}
+		}
+		return ret;
+	}
 
 	// returns a random cell that is not closed
 	// used to spawn location for alien, bot, crewmember
@@ -265,7 +306,7 @@ public class board {
 	// utility function to create string key for our dictionary
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+		return Integer.toString(x1) +"," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 }

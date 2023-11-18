@@ -1,5 +1,6 @@
 package aliensrematch;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.text.DecimalFormat;
 
@@ -473,15 +474,7 @@ public class bot4 {
 		// if we find the crewmember
 		// there is now no crewmember in this cell, so p = 0
 		// continue on with recalculating probabilities
-		if (isDestination()) {
-			board.board[x][y].pcrew = 0.0;
-		}
-		double[][] probs = new double[board.board.length][board.board.length];
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				probs[i][j] = board.board[i][j].pcrew;
-			}
-		}
+
 		// if the bot gets a beep
 		if (beep()) {
 			if (debug == 1) {
@@ -489,25 +482,31 @@ public class bot4 {
 			}
 			// set current bot position probability to 0
 			board.board[x][y].pcrew = 0;
+			ArrayList<cell> pairs= board.getallCellPairs(board.board[x][y]);
+			for(int i=0; i<pairs.size(); i++){
+				String key = board.findKeypCrew(x,y,pairs.get(i).x,pairs.get(i).y);
+				board.pcellsDict.replace(key,0.0);
+			}
 			double totalProb = 0.0;
 			double beta = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
 				for (String key: board.pcellsDict.keySet()) {
-					cell cell1 = board.board[Integer.parseInt(key.substring(0,1))][Integer.parseInt(key.substring(1,2))];
+					String[] coords = key.split(",");
+					cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 					if (cell1.x != x && cell1.y != y) {
-						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						String cell1key = board.findKeyD(x, y, cell1.x, cell1.y);
 						int cell1d = board.dict.get(cell1key);
 						double beep1 = Math.pow(Math.E, (-alpha) * (cell1d-1));
 
-						cell cell2 = board.board[Integer.parseInt(key.substring(2,3))][Integer.parseInt(key.substring(3,4))];
+						cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 						if (cell2.x != x && cell2.y != y) {
-							String cell2key = createKey(x, y, cell2.x, cell2.y);
+							String cell2key = board.findKeyD(x, y, cell2.x, cell2.y);
 							int cell2d = board.dict.get(cell2key);
 							double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
 
 							double value = board.pcellsDict.get(key);
 							value*=(beep1 + beep2 -(beep1*beep2));
-							board.pcellsDict.replace (key,value);
+							board.pcellsDict.replace(key,value);
 							totalProb+=value;
 						}
 					}
@@ -522,23 +521,32 @@ public class bot4 {
 					for (int b = 0; b < board.board.length; b++) {
 						cell curr = board.board[a][b];
 						double newprob = 0.0;
-						if (curr.state && (curr.x != x && curr.y != y)) {
-							for (String key : board.pcellsDict.keySet()) {
-								if ((Integer.parseInt(key.substring(0,1)) == a && Integer.parseInt(key.substring(1,2)) == b)
-										|| (Integer.parseInt(key.substring(2,3)) == a && Integer.parseInt(key.substring(3,4)) == b)) {
-									newprob += board.pcellsDict.get(key);
-								}
+						boolean flag = false;
+						ArrayList<cell> updatePairs = board.getallCellPairs(curr);
+						for(int i =0; i<updatePairs.size(); i++){
+							newprob+= board.pcellsDict.get(board.findKeypCrew(curr.x,curr.y,updatePairs.get(i).x,updatePairs.get(i).y));
+							flag=true;
+						}
+						if(Double.compare(newprob,0.0)==0 && flag&& curr.pcrew!=0){
+							System.out.println("Curr x: "+curr.x+ " y: "+curr.y);
+							for(int q=0; q<updatePairs.size(); q++){
+								System.out.println("Cell x: "+updatePairs.get(q).x+ " y: "+updatePairs.get(q).y);
 							}
 						}
-						if (curr.pcrew != 0.0) {
 							curr.pcrew = newprob;
 							beta += curr.pcrew;
-						}
+
 					}
 				}
 
 				// 1 crewmember case
 			}else {
+				double[][] probs = new double[board.board.length][board.board.length];
+				for (int i = 0; i < board.board.length; i++) {
+					for (int j = 0; j < board.board.length; j++) {
+						probs[i][j] = board.board[i][j].pcrew;
+					}
+				}
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
 						cell cell1 = board.board[a][b];
@@ -561,7 +569,7 @@ public class bot4 {
 							double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
 							if (curr1.pcrew == 0) {
 								curr1.pcrew = 0;
-								// multiply probability of crewmember in cell * probability of beep | crewmembe
+								// multiply probability of crewmember in cell * probability of beep | crewmember
 							} else if (d1 != 0) {
 								curr1.pcrew *= (beepProb1/totalProb);
 							}
@@ -586,19 +594,26 @@ public class bot4 {
 			// if the bot does not get a beep
 		} else {
 			board.board[x][y].pcrew = 0;
+			ArrayList<cell> pairs= board.getallCellPairs(board.board[x][y]);
+			for(int i=0; i<pairs.size(); i++){
+				String key = board.findKeypCrew(x,y,pairs.get(i).x,pairs.get(i).y);
+				board.pcellsDict.put(key,0.0);
+			}
 			double totalProb = 0.0;
 			double beta = 0.0;
 			if(crewmember1!=null && crewmember2!=null) {
 				for (String key: board.pcellsDict.keySet()) {
-					cell cell1 = board.board[Integer.parseInt(key.substring(0,1))][Integer.parseInt(key.substring(1,2))];
+					String[] coords = key.split(",");
+
+					cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 					if (cell1.x != x && cell1.y != y) {
-						String cell1key = createKey(x, y, cell1.x, cell1.y);
+						String cell1key = board.findKeyD(x, y, cell1.x, cell1.y);
 						int cell1d = board.dict.get(cell1key);
 						double beep1 = 1.0 - Math.pow(Math.E, (-alpha) * (cell1d-1));
 
-						cell cell2 = board.board[Integer.parseInt(key.substring(2,3))][Integer.parseInt(key.substring(3,4))];
+						cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 						if (cell2.x != x && cell2.y != y) {
-							String cell2key = createKey(x, y, cell2.x, cell2.y);
+							String cell2key = board.findKeyD(x, y, cell2.x, cell2.y);
 							int cell2d = board.dict.get(cell2key);
 							double beep2 = 1.0 - Math.pow(Math.E, (-alpha) * (cell2d-1));
 
@@ -609,6 +624,7 @@ public class bot4 {
 						}
 					}
 				}
+
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
 					board.pcellsDict.replace(key, value/totalProb);
@@ -619,23 +635,33 @@ public class bot4 {
 					for (int b = 0; b < board.board.length; b++) {
 						cell curr = board.board[a][b];
 						double newprob = 0.0;
-						if (curr.state && (curr.x != x && curr.y != y)) {
-							for (String key : board.pcellsDict.keySet()) {
-								if ((Integer.parseInt(key.substring(0,1)) == a && Integer.parseInt(key.substring(1,2)) == b)
-										|| (Integer.parseInt(key.substring(2,3)) == a && Integer.parseInt(key.substring(3,4)) == b)) {
-									newprob += board.pcellsDict.get(key);
-								}
+						boolean flag = false;
+						ArrayList<cell> updatePairs = board.getallCellPairs(curr);
+						for(int i =0; i<updatePairs.size(); i++){
+							newprob+= board.pcellsDict.get(board.findKeypCrew(curr.x,curr.y,updatePairs.get(i).x,updatePairs.get(i).y));
+							flag=true;
+						}
+						if(Double.compare(newprob,0.0)==0&& flag&& curr.pcrew!=0){
+							System.out.println("Curr x: "+curr.x+ " y: "+curr.y);
+							for(int q=0; q<updatePairs.size(); q++){
+								System.out.println("Cell x: "+updatePairs.get(q).x+ " y: "+updatePairs.get(q).y);
 							}
 						}
-						if (curr.pcrew != 0.0) {
+
 							curr.pcrew = newprob;
 							beta += curr.pcrew;
-						}
+
 					}
 				}
 
 				// 1 crewmember case
 			}else {
+				double[][] probs = new double[board.board.length][board.board.length];
+				for (int i = 0; i < board.board.length; i++) {
+					for (int j = 0; j < board.board.length; j++) {
+						probs[i][j] = board.board[i][j].pcrew;
+					}
+				}
 				for (int a = 0; a < board.board.length; a++) {
 					for (int b = 0; b < board.board.length; b++) {
 						cell cell1 = board.board[a][b];
@@ -729,7 +755,7 @@ public class bot4 {
 	// utility function to create string key for our dictionary
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+		return Integer.toString(x1) + "," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 	// run the bot
