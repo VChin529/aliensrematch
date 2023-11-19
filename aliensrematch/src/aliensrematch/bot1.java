@@ -13,7 +13,7 @@ public class bot1 {
 	crewmember crewmember; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
 	int debug = 0; // utility for debugging. ignore. 0 = nothing , 1 = print the board, 2 = see
-					// more detailed results
+	// more detailed results
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot1(int k, double alpha) {
@@ -21,7 +21,7 @@ public class bot1 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(50);
+		board = new board(30);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -587,7 +587,7 @@ public class bot1 {
 	// utility function to create string key for our dictionary
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+		return Integer.toString(x1) +"," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 	void wipeParents() {

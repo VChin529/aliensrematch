@@ -23,7 +23,7 @@ public class bot2 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(50);
+		board = new board(30);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -125,8 +125,9 @@ public class bot2 {
 				curr.up.parent = curr;
 			} else if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
 					&& (!visited.contains(curr.up))) {
-				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
+				if (d != 0 && Math.random() <= (1.0-(Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.up);
+					ct++;
 				}
 			}
 
@@ -139,8 +140,9 @@ public class bot2 {
 				curr.down.parent = curr;
 			}else if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down)) && (curr.down != null)
 					&& (!visited.contains(curr.down))) {
-				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
+				if (d != 0 && Math.random() <= (1.0-(Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.down);
+					ct++;
 				}
 			}
 
@@ -153,8 +155,9 @@ public class bot2 {
 				curr.left.parent = curr;
 			}else if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left)) && (curr.left != null)
 					&& (!visited.contains(curr.left))) {
-				if (d != 0 && Math.random() <= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
+				if (d != 0 && Math.random() <= (1.0-(Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.left);
+					ct++;
 				}
 			}
 
@@ -167,8 +170,9 @@ public class bot2 {
 				curr.right.parent = curr;
 			}else if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right)) && (curr.right != null)
 					&& (!visited.contains(curr.right))) {
-				if (d != 0 && Math.random()<= (1- (Math.pow(Math.E, -0.25*(d-1))))) {
+				if (d != 0 && Math.random()<= (1.0-(Math.pow(Math.E, -0.25*(d-1))))) {
 					queue.add(curr.right);
+					ct++;
 				}
 			}
 
@@ -684,7 +688,7 @@ public class bot2 {
 	// utility function to create string key for our dictionary
 	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
 	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + Integer.toString(y1) + Integer.toString(x2) + Integer.toString(y2);
+		return Integer.toString(x1) +"," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 

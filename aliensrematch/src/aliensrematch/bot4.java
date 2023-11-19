@@ -14,7 +14,7 @@ public class bot4 {
 	alien alien; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot4(int k, double alpha) {
@@ -22,7 +22,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(20);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -505,23 +505,23 @@ public class bot4 {
 							double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
 
 							double value = board.pcellsDict.get(key);
-							System.out.println("KEY: " + key);
-							System.out.println("FIRST: " + value);
+							//System.out.println("KEY: " + key);
+							//System.out.println("FIRST: " + value);
 							value*=(beep1 + beep2 -(beep1*beep2));
-							System.out.println("SECOND: " + value);
+							//System.out.println("SECOND: " + value);
 							board.pcellsDict.replace(key,value);
 							totalProb+=board.pcellsDict.get(key);
 						}
 					}
 				}
-				System.out.println("TOTALPROB: " + totalProb);
+				/*System.out.println("TOTALPROB: " + totalProb);
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
 					value = value / totalProb;
 					board.pcellsDict.replace(key, value);
 					System.out.println("KEY: " + key);
 					System.out.println("THIRD: " + board.pcellsDict.get(key));
-				}
+				}*/
 
 
 				for (int a = 0; a < board.board.length; a++) {
@@ -534,12 +534,12 @@ public class bot4 {
 							newprob+= board.pcellsDict.get(board.findKeypCrew(curr.x,curr.y,updatePairs.get(i).x,updatePairs.get(i).y));
 							flag=true;
 						}
-						if(Double.compare(newprob,0.0)==0 && flag&& curr.pcrew!=0){
+						/*if(Double.compare(newprob,0.0)==0 && flag&& curr.pcrew!=0){
 							System.out.println("Curr x: "+curr.x+ " y: "+curr.y);
 							for(int q=0; q<updatePairs.size(); q++){
 								System.out.println("Cell x: "+updatePairs.get(q).x+ " y: "+updatePairs.get(q).y);
 							}
-						}
+						}*/
 							curr.pcrew = newprob;
 							beta += curr.pcrew;
 
@@ -625,24 +625,24 @@ public class bot4 {
 							double beep2 = 1.0 - Math.pow(Math.E, (-alpha) * (cell2d-1));
 
 							double value = board.pcellsDict.get(key);
-							System.out.println("KEY: " + key);
-							System.out.println("FIRST: " + value);
+							//System.out.println("KEY: " + key);
+							//System.out.println("FIRST: " + value);
 							value*=(beep1*beep2);
-							System.out.println("SECOND: " + value);
+							//System.out.println("SECOND: " + value);
 							board.pcellsDict.replace(key,value);
 							totalProb+=value;
 						}
 					}
 				}
 				
-				System.out.println("TOTALPROB: " + totalProb);
+				/*System.out.println("TOTALPROB: " + totalProb);
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
 					value = value /totalProb;
 					board.pcellsDict.replace(key, value);
 					System.out.println("KEY: " + key);
 					System.out.println("THIRD: " + board.pcellsDict.get(key));
-				}
+				}*/
 
 
 				for (int a = 0; a < board.board.length; a++) {
@@ -655,12 +655,12 @@ public class bot4 {
 							newprob+= board.pcellsDict.get(board.findKeypCrew(curr.x,curr.y,updatePairs.get(i).x,updatePairs.get(i).y));
 							flag=true;
 						}
-						if(Double.compare(newprob,0.0)==0&& flag&& curr.pcrew!=0){
+						/*if(Double.compare(newprob,0.0)==0&& flag&& curr.pcrew!=0){
 							System.out.println("Curr x: "+curr.x+ " y: "+curr.y);
 							for(int q=0; q<updatePairs.size(); q++){
 								System.out.println("Cell x: "+updatePairs.get(q).x+ " y: "+updatePairs.get(q).y);
 							}
-						}
+						}*/
 
 							curr.pcrew = newprob;
 							beta += curr.pcrew;
