@@ -505,15 +505,22 @@ public class bot4 {
 							double beep2 = Math.pow(Math.E, (-alpha) * (cell2d-1));
 
 							double value = board.pcellsDict.get(key);
+							System.out.println("KEY: " + key);
+							System.out.println("FIRST: " + value);
 							value*=(beep1 + beep2 -(beep1*beep2));
+							System.out.println("SECOND: " + value);
 							board.pcellsDict.replace(key,value);
-							totalProb+=value;
+							totalProb+=board.pcellsDict.get(key);
 						}
 					}
 				}
+				System.out.println("TOTALPROB: " + totalProb);
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
-					board.pcellsDict.replace(key, value/totalProb);
+					value = value / totalProb;
+					board.pcellsDict.replace(key, value);
+					System.out.println("KEY: " + key);
+					System.out.println("THIRD: " + board.pcellsDict.get(key));
 				}
 
 
@@ -618,16 +625,23 @@ public class bot4 {
 							double beep2 = 1.0 - Math.pow(Math.E, (-alpha) * (cell2d-1));
 
 							double value = board.pcellsDict.get(key);
+							System.out.println("KEY: " + key);
+							System.out.println("FIRST: " + value);
 							value*=(beep1*beep2);
+							System.out.println("SECOND: " + value);
 							board.pcellsDict.replace(key,value);
 							totalProb+=value;
 						}
 					}
 				}
-
+				
+				System.out.println("TOTALPROB: " + totalProb);
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
-					board.pcellsDict.replace(key, value/totalProb);
+					value = value /totalProb;
+					board.pcellsDict.replace(key, value);
+					System.out.println("KEY: " + key);
+					System.out.println("THIRD: " + board.pcellsDict.get(key));
 				}
 
 
@@ -703,6 +717,10 @@ public class bot4 {
 				}
 			}
 		}
+		/*
+		for (String key : board.pcellsDict.keySet()) {
+			System.out.println("Key: " + key + " Value: " + board.pcellsDict.get(key));
+		}*/
 	}
 
 	void wipeParents() {
