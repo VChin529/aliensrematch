@@ -22,7 +22,7 @@ public class bot4 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(30);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -544,7 +544,6 @@ public class bot4 {
 					}
 				}
 
-				beta /= 2.0;
 
 				// 1 crewmember case
 			}else {
@@ -664,7 +663,6 @@ public class bot4 {
 
 					}
 				}
-				beta /= 2.0;
 
 				// 1 crewmember case
 			}else {
@@ -839,7 +837,7 @@ public class bot4 {
 					crewmember2 = null;
 				}
 				
-				double beta = 0.0;
+				/*double beta = 0.0;
 				for (int i = 0; i < board.board.length; i++) {
 					for (int j = 0; j < board.board.length; j++) {
 						beta += board.board[i][j].pcrew;
@@ -850,7 +848,7 @@ public class bot4 {
 					for (int j = 0; j < board.board.length; j++) {
 						board.board[i][j].pcrew /= beta;
 					}
-				}
+				}*/
 				
 			}
 			// move aliens
