@@ -131,7 +131,7 @@ public class bot9 {
 				curr.up.parent = curr;
 			} else if ((curr.up != null) && (curr.up.state) && (!queue.contains(curr.up)) && (curr.up != null)
 					&& (!visited.contains(curr.up))) {
-				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(1.0- curr.up.palien)) {
+				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(Math.pow(1-curr.up.palien, 0.25))) {
 					queue.add(curr.up);
 					ct++;
 				}
@@ -146,7 +146,7 @@ public class bot9 {
 				curr.down.parent = curr;
 			}else if ((curr.down != null) && (curr.down.state) && (!queue.contains(curr.down)) && (curr.down != null)
 					&& (!visited.contains(curr.down))) {
-				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(1.0- curr.down.palien)) {
+				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(Math.pow(1-curr.down.palien, 0.25))) {
 					queue.add(curr.down);
 					ct++;
 				}
@@ -161,7 +161,7 @@ public class bot9 {
 				curr.left.parent = curr;
 			}else if ((curr.left != null) && (curr.left.state) && (!queue.contains(curr.left)) && (curr.left != null)
 					&& (!visited.contains(curr.left))) {
-				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(1.0- curr.left.palien)) {
+				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(Math.pow(1-curr.left.palien, 0.25))) {
 					queue.add(curr.left);
 					ct++;
 				}
@@ -176,7 +176,7 @@ public class bot9 {
 				curr.right.parent = curr;
 			}else if ((curr.right != null) && (curr.right.state) && (!queue.contains(curr.right)) && (curr.right != null)
 					&& (!visited.contains(curr.right))) {
-				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(1.0- curr.right.palien)) {
+				if (d != 0 && Math.random() <= (1.0-(((d+1)/d)-1))*(Math.pow(1-curr.right.palien, 0.25))) {
 					queue.add(curr.right);
 					ct++;
 				}
