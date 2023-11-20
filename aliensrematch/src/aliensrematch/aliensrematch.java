@@ -15,7 +15,9 @@ public class aliensrematch {
 		int saved5 = 0, sumsteps5 = 0;
 		int saved6 = 0, sumsteps6 = 0;
 		int saved7 = 0, sumsteps7 = 0;
-		int ran2 = 0, ran5 = 0;
+		int saved8 = 0, sumsteps8 = 0;
+		int saved9 = 0, sumsteps9 = 0;
+		int ran2 = 0, ran5 = 0, ran8 = 0, ran9 = 0;
 
 		int iters=30;
 		for (int i = 0; i < iters; i++) {
@@ -28,6 +30,11 @@ public class aliensrematch {
 			bot2 bot2 = new bot2(5, 0.05);
 			int[] ret2 = new int[2];
 			ret2 = bot2.run();
+			
+			System.out.println("bot9");
+			bot9 bot9 = new bot9(5, 0.05);
+			int[] ret9 = new int[2];
+			ret9 = bot9.run();
 			
 			/*System.out.println("bot3");
 			bot3 bot3 = new bot3(5, 0.05);
@@ -57,6 +64,10 @@ public class aliensrematch {
 			sumsteps1 += ret1[1];
 			sumsteps2 += ret2[1];
 			ran2+=bot2.ct;
+			saved9 += ret9[0];
+			sumsteps9 += ret9[1];
+			ran9 += bot9.ct;
+			
 
 			/*saved3 += ret3[0];
 			sumsteps3 += ret3[1];
@@ -83,6 +94,8 @@ public class aliensrematch {
 				+ ran5 / iters + " random moves");
 		System.out.println("Bot 6 saved " + saved6 + " crew and took an average of " + sumsteps6 / iters + " steps");
 		System.out.println("Bot 7 saved " + saved7 + " crew and took an average of " + sumsteps7 / iters + " steps");
+		System.out.println("Bot 9 saved " + saved9 + " crew and took an average of " + sumsteps9 / iters + " steps and took an average of "
+				+ ran9 / iters + " random moves");
 
 	}
 
