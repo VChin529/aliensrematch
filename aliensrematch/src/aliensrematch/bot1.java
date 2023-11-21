@@ -599,8 +599,8 @@ public class bot1 {
 	}
 
 	// run the bot
-	int[] run() {
-		int[] ret = new int[2];
+	double[] run() {
+		double[] ret = new double[2];
 		int step = 0; // # of steps taken
 		// keep looping
 		// we will break manually once we find the crewmember

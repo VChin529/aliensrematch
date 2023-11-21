@@ -22,7 +22,7 @@ public class bot6 {
 		this.alpha = alpha;
 
 		// generate board dimension 50x50
-		board = new board(50);
+		board = new board(30);
 
 		// random placement of bot
 		cell curr = board.randomCell();
@@ -503,11 +503,11 @@ public class bot6 {
 		// getting distance from our position to the crewmember
 		if (crewmember1 != null && crewmember2 != null) {
 			// find the probability of beep from crewmember1 && crewmember2
-			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
+			String current1 = board.findKeyD(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
 			double prob1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
 
-			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
+			String current2 = board.findKeyD(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
 			double prob2 = Math.pow(Math.E, (-alpha * (d2 - 1)));
 
@@ -516,12 +516,12 @@ public class bot6 {
 			prob = 1 - (prob1 * prob2);
 
 		} else if (crewmember1 != null) { // crewmember2 is null, we are looking for crew1
-			String current = createKey(x, y, crewmember1.x, crewmember1.y);
+			String current = board.findKeyD(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
 			prob = Math.pow(Math.E, (-alpha * (d - 1)));
 
 		} else { // crewmember1 is null, we are looking for crew2
-			String current = createKey(x, y, crewmember2.x, crewmember2.y);
+			String current = board.findKeyD(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
 			prob = Math.pow(Math.E, (-alpha * (d - 1)));
 		}
@@ -556,7 +556,7 @@ public class bot6 {
 					if (curr.state) {
 						// find the distance from us to the cell
 						// probability that the beep went off if the crewmember was in that cell
-						String current = createKey(x, y, i, j);
+						String current = board.findKeyD(x, y, i, j);
 						int d = board.dict.get(current);
 
 						// multiply probability of crewmember in cell * probability of beep | crewmember
@@ -657,8 +657,8 @@ public class bot6 {
 	}
 
 	// run the bot
-	int[] run() {
-		int[] ret = new int[2];
+	double[] run() {
+		double[] ret = new double[2];
 		int saved = 0; // # of crewmembers saved
 		int step = 0; // # of steps taken
 
