@@ -13,6 +13,8 @@ public class board {
 	int open = 0; // # of open cells in the board
 	HashMap<String, Integer> dict = new HashMap<>(); // to store distances from each cell to each cell
 	HashMap<String, Double> pcellsDict = new HashMap<>();
+	HashMap<String, Double> paliensDict = new HashMap<>();
+	
 	public board(int d) {
 		this.d = d;
 		board = new cell[d][d];
@@ -138,6 +140,7 @@ public class board {
 							if (cell2.state && (x1!=x2 && y1!=y2)) {
 								String key = createKey(x1,y1,x2,y2);
 								pcellsDict.put(key, 0.0);
+								paliensDict.put(key, 0.0);
 							}
 						}
 					}
@@ -163,12 +166,28 @@ public class board {
 		}
 
 	}
+	
+	
 	String findKeyD(int x1, int y1, int x2, int y2){
 		String key1 = createKey(x1,y1,x2,y2);
 		String key2 = createKey(x2,y2,x1,y1);
 		if(dict.containsKey(key1)){
 			return key1;
 		}else if(dict.containsKey(key2)){
+			return key2;
+		}else{
+			return null;
+		}
+
+	}
+	
+	
+	String findKeypAlien(int x1, int y1, int x2, int y2){
+		String key1 = createKey(x1,y1,x2,y2);
+		String key2 = createKey(x2,y2,x1,y1);
+		if(paliensDict.containsKey(key1)){
+			return key1;
+		}else if(paliensDict.containsKey(key2)){
 			return key2;
 		}else{
 			return null;
@@ -183,6 +202,21 @@ public class board {
 			for(int j=0; j<board.length; j++){
 				if(board[i][j].state) {
 					String key = findKeypCrew(cell.x, cell.y, i, j);
+					if(key!=null){
+						ret.add(board[i][j]);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	ArrayList<cell> getallAlienPairs(cell cell){
+		ArrayList<cell> ret = new ArrayList<cell>();
+		for(int i =0; i<board.length; i++){
+			for(int j=0; j<board.length; j++){
+				if(board[i][j].state) {
+					String key = findKeypAlien(cell.x, cell.y, i, j);
 					if(key!=null){
 						ret.add(board[i][j]);
 					}

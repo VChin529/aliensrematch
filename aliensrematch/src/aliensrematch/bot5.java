@@ -455,20 +455,20 @@ public class bot5 {
 		// getting distance from our position to the crewmember
 		if (crewmember1 != null && crewmember2 != null) {
 			// find the probability of beep from crewmember1 && crewmember2
-			String current1 = createKey(x, y, crewmember1.x, crewmember1.y);
+			String current1 = board.findKeyD(x, y, crewmember1.x, crewmember1.y);
 			int d1 = board.dict.get(current1);
 			double prob1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
-			String current2 = createKey(x, y, crewmember2.x, crewmember2.y);
+			String current2 = board.findKeyD(x, y, crewmember2.x, crewmember2.y);
 			int d2 = board.dict.get(current2);
 			double prob2 = Math.pow(Math.E, (-alpha * (d2 - 1)));
 			// final beep probability is from one OR the other
 			prob = prob1+prob2 - (prob1*prob2);
 		} else if (crewmember1 != null) { // crewmember2 is null, we are looking for crew1
-			String current = createKey(x, y, crewmember1.x, crewmember1.y);
+			String current = board.findKeyD(x, y, crewmember1.x, crewmember1.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		} else { // crewmember1 is null, we are looking for crew2
-			String current = createKey(x, y, crewmember2.x, crewmember2.y);
+			String current = board.findKeyD(x, y, crewmember2.x, crewmember2.y);
 			int d = board.dict.get(current);
 			prob = (Math.pow(Math.E, (-alpha * (d - 1))));
 		}
@@ -559,7 +559,7 @@ public class bot5 {
 					for (int b = 0; b < board.board.length; b++) {
 						cell cell1 = board.board[a][b];
 						if (cell1.state) {
-							String cell1key = createKey(x, y, cell1.x, cell1.y);
+							String cell1key = board.findKeyD(x, y, cell1.x, cell1.y);
 							int cell1d = board.dict.get(cell1key);
 							totalProb += (Math.pow(Math.E, (-alpha * (cell1d - 1)))) * probs[a][b];
 						}
@@ -572,7 +572,7 @@ public class bot5 {
 						if (curr1.state && !(x == i && y == j)) {
 							// find the distance from us to the cell
 							// probability that the beep went off if the crewmember was in that cell
-							String temp1 = createKey(x, y, i, j);
+							String temp1 = board.findKeyD(x, y, i, j);
 							int d1 = board.dict.get(temp1);
 							double beepProb1 = Math.pow(Math.E, (-alpha * (d1 - 1)));
 							if (curr1.pcrew == 0) {
@@ -678,7 +678,7 @@ public class bot5 {
 					for (int b = 0; b < board.board.length; b++) {
 						cell cell1 = board.board[a][b];
 						if (cell1.state) {// do we care about it going into our cell?
-							String cell1key = createKey(x, y, cell1.x, cell1.y);
+							String cell1key = board.findKeyD(x, y, cell1.x, cell1.y);
 							int cell1d = board.dict.get(cell1key);
 							totalProb += (1.0 - Math.pow(Math.E, (-alpha * (cell1d - 1)))) * probs[a][b];
 						}
@@ -691,7 +691,7 @@ public class bot5 {
 						if (curr1.state && !(x == i && y == j)) {
 							// find the distance from us to the cell
 							// probability that the beep went off if the crewmember was in that cell
-							String temp1 = createKey(x, y, i, j);
+							String temp1 = board.findKeyD(x, y, i, j);
 							int d1 = board.dict.get(temp1);
 							double beepProb1 = 1.0 - Math.pow(Math.E, (-alpha * (d1 - 1)));
 							if (curr1.pcrew == 0) {
@@ -804,12 +804,6 @@ public class bot5 {
 
 
 		return ret;
-	}
-
-	// utility function to create string key for our dictionary
-	// it is in the format 1234, with srcx=1, srcy=2, destx=3, desty=4
-	String createKey(int x1, int y1, int x2, int y2) {
-		return Integer.toString(x1) + "," +Integer.toString(y1) + "," +Integer.toString(x2) + "," +Integer.toString(y2);
 	}
 
 	// run the bot
