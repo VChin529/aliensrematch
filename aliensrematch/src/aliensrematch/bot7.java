@@ -78,8 +78,8 @@ public class bot7 {
 		while (dest.x == x && dest.y == y) {
 			dest = board.randomCell();
 		}
-		
-		
+
+
 		double temp = 0.0;
 		for (String key: board.paliensDict.keySet()) {
 			String[] coords = key.split(",");
@@ -89,7 +89,7 @@ public class bot7 {
 				temp++;
 			}
 		}
-		
+
 		for (String key: board.paliensDict.keySet()) {
 			String[] coords = key.split(",");
 			cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
@@ -100,8 +100,8 @@ public class bot7 {
 				board.paliensDict.replace(key, 0.0);
 			}
 		}
-		
-		
+
+
 	}
 
 	// checks if bot position is crewmember position
@@ -325,6 +325,7 @@ public class bot7 {
 		double beta = 0.0; // to calculate normalization constant
 		// scanner goes off
 		if (alienScan()) {
+			System.out.println("BOT MOVE ALIEN SCAN");
 			board.board[x][y].palien = 0;
 			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
 			for(int i=0; i<pairs.size(); i++){
@@ -339,12 +340,15 @@ public class bot7 {
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 				if (alienScanCoord(cell1.x, cell1.y) && alienScanCoord(cell2.x, cell2.y)) {
+					System.out.println("in both condition?" + board.paliensDict.get(key));
 					total_prob_square += board.paliensDict.get(key);
 				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)){
 					total_prob_square += board.paliensDict.get(key);
 					total_prob_mixed += board.paliensDict.get(key);
 				}
 			}
+			System.out.println("SQUARE TOTAL :" + total_prob_square);
+			System.out.println("MIXED TOTAL :" + total_prob_mixed);
 
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
@@ -375,7 +379,7 @@ public class bot7 {
 				}
 			}
 
-
+			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -387,6 +391,7 @@ public class bot7 {
 
 			// scanner does not go off
 		} else {
+			System.out.println("BOT MOVE NO ALIEN SCAN");
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
@@ -394,13 +399,12 @@ public class bot7 {
 				if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
 					board.paliensDict.replace(key, 0.0);
 				} else {
-					System.out.println(board.paliensDict.get(key));
 					beta+= board.paliensDict.get(key);
 				}
 			}
 
-			//System.out.println("BETA: " + beta);
-			
+			System.out.println("BETA FOR PAIRS: " + beta);
+
 			for (String key: board.paliensDict.keySet()) {
 				Double value = board.paliensDict.get(key);
 				value = value/ beta;
@@ -425,20 +429,21 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
-		}
-		
-		
-		// normalize
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				cell curr = board.board[i][j];
-				Double value = (1.0 / beta) * curr.palien;
-				curr.palien = (1.0 / beta) * curr.palien;
-				/*if (value.isNaN()) {
-					System.out.println("HERE2");
-				}*/
+			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+
+			// normalize
+			for (int i = 0; i < board.board.length; i++) {
+				for (int j = 0; j < board.board.length; j++) {
+					cell curr = board.board[i][j];
+					//Double value = (1.0 / beta) * curr.palien;
+					curr.palien = (1.0 / beta) * curr.palien;
+					/*if (value.isNaN()) {
+						System.out.println("HERE2");
+					}*/
+				}
 			}
 		}
+
 	}
 
 
@@ -455,19 +460,20 @@ public class bot7 {
 
 		double beta = 0.0; // to calculate normalization constant
 		if (alienScan()) {
+			System.out.println("ALIEN MOVE SCANNER");
 			board.board[x][y].palien = 0;
 			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
 			for(int i=0; i<pairs.size(); i++){
 				String key = board.findKeypAlien(x,y,pairs.get(i).x,pairs.get(i).y);
 				board.paliensDict.replace(key,0.0);
 			}
-			
+
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 				if ((x==cell1.x && y==cell1.y) || (x==cell2.x && y==cell2.y)) {
-					board.paliensDict.replace(key, 0.0);
+					continue;
 				} else {
 					ArrayList<cell> cell1neighbors = new ArrayList<cell>();
 					ArrayList<cell> cell2neighbors = new ArrayList<cell>();
@@ -524,6 +530,8 @@ public class bot7 {
 					beta += prob;
 				}
 			}
+			
+			System.out.println("BETA FOR PAIRS: " + beta);
 
 			for (String key: board.paliensDict.keySet()) {
 				double value = board.paliensDict.get(key);
@@ -545,6 +553,9 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
+			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+			
+			
 		} else {
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
@@ -602,15 +613,19 @@ public class bot7 {
 						}
 					}
 
-
 					board.paliensDict.replace(key,prob);
 					beta += prob;
 				}
 			}
+			
+			System.out.println("BETA FOR PAIRS: " + beta);
 
+			//System.out.println("OUTSIDE LOOP");
 			for (String key: board.paliensDict.keySet()) {
+				//System.out.println("INSIDE LOOP");
 				double value = board.paliensDict.get(key);
 				board.paliensDict.replace(key, value/beta);
+				//System.out.println("MATH STUFF: " + value / beta);
 			}
 
 
@@ -628,6 +643,8 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
+			
+			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 		}
 
 		// normalize
@@ -996,100 +1013,100 @@ public class bot7 {
 
 
 	// run the bot
-		int[] run() {
-			int[] ret = new int[2];
-			int saved = 0; // # of crewmembers saved
-			int step = 0; // # of steps taken
+	int[] run() {
+		int[] ret = new int[2];
+		int saved = 0; // # of crewmembers saved
+		int step = 0; // # of steps taken
 
-			// keep looping
-			// we will break manually once we find the crewmember
-			while (true) {
+		// keep looping
+		// we will break manually once we find the crewmember
+		while (true) {
 
-				if (debug == 1) {
-					printBoard();
-					System.out.println();
-				}
-
-				// get path
-				// if no path, return
-				Stack<cell> path = findPath();
-				if (path == null) {
-					System.out.println("Path could not be found");
-					ret[0] = saved;
-					ret[1] = step;
-					return ret;
-				}
-
-				// look at next move ONLY
-				cell curr = path.pop();
-				// advance bot
-				x = curr.x;
-				y = curr.y;
-				step++;
-
-				// update alien probabilities
-				botMoveAlienProbability();
-
-				if (debug == 1) {
-					printBoard();
-					System.out.println();
-				}
-
-				// alien check
-				// if caught by alien, return
-				if (curr.alien == true) {
-					ret[0] = saved;
-					ret[1] = step;
-					return ret;
-
-				}
-
-				// crewmember check
-				// saved crewmember, increment saved count
-				// if we have saved both crewmembers, return
-				if (isDestination()) {
-					saved++;
-
-					if (saved == 2) {
-						ret[0] = saved;
-						ret[1] = step;
-						return ret;
-					}
-
-					// turn off the crewmember we just saved
-					if (crewmember1 != null && x == crewmember1.x && y == crewmember1.y) {
-						crewmember1 = null;
-					} else {
-						crewmember2 = null;
-					}
-				}
-
-				// move aliens randomly
-				int mv = (int) (Math.random() * 2);
-				if (mv == 0) {
-					alien1.move();
-					alien2.move();
-				} else {
-					alien2.move();
-					alien1.move();
-				}
-
-				alienMoveAlienProbability();
-
-				// update crewmember probabilities
-				crewmateProbability();
-
-				// alien check
-				if (board.getCell(x, y).alien == true) {
-					ret[0] = saved;
-					ret[1] = step;
-					return ret;
-				}
-				
-				wipeParents();
+			if (debug == 1) {
+				printBoard();
+				System.out.println();
 			}
 
+			// get path
+			// if no path, return
+			Stack<cell> path = findPath();
+			if (path == null) {
+				System.out.println("Path could not be found");
+				ret[0] = saved;
+				ret[1] = step;
+				return ret;
+			}
+
+			// look at next move ONLY
+			cell curr = path.pop();
+			// advance bot
+			x = curr.x;
+			y = curr.y;
+			step++;
+
+			// update alien probabilities
+			botMoveAlienProbability();
+
+			if (debug == 1) {
+				printBoard();
+				System.out.println();
+			}
+
+			// alien check
+			// if caught by alien, return
+			if (curr.alien == true) {
+				ret[0] = saved;
+				ret[1] = step;
+				return ret;
+
+			}
+
+			// crewmember check
+			// saved crewmember, increment saved count
+			// if we have saved both crewmembers, return
+			if (isDestination()) {
+				saved++;
+
+				if (saved == 2) {
+					ret[0] = saved;
+					ret[1] = step;
+					return ret;
+				}
+
+				// turn off the crewmember we just saved
+				if (crewmember1 != null && x == crewmember1.x && y == crewmember1.y) {
+					crewmember1 = null;
+				} else {
+					crewmember2 = null;
+				}
+			}
+
+			// move aliens randomly
+			int mv = (int) (Math.random() * 2);
+			if (mv == 0) {
+				alien1.move();
+				alien2.move();
+			} else {
+				alien2.move();
+				alien1.move();
+			}
+
+			alienMoveAlienProbability();
+
+			// update crewmember probabilities
+			crewmateProbability();
+
+			// alien check
+			if (board.getCell(x, y).alien == true) {
+				ret[0] = saved;
+				ret[1] = step;
+				return ret;
+			}
+
+			wipeParents();
 		}
+
+	}
 
 	// utility function
 	// print positions of aliens, bot, crewmember, open/closed cells, and
