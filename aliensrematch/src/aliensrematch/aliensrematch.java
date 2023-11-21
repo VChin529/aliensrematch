@@ -39,15 +39,15 @@ public class aliensrematch {
 			ret9 = bot9.run();*/
 			
 			System.out.println("bot3");
-			bot3 bot3 = new bot3(2, 0.05);
+			bot3 bot3 = new bot3(3, 0.05);
 			int[] ret3 = new int[2];
 			ret3 = bot3.run();
 			System.out.println("bot4");
-			bot4 bot4 = new bot4(2, 0.05);
+			bot4 bot4 = new bot4(3, 0.05);
 			int[] ret4 = new int[2];
 			ret4 = bot4.run();
 			System.out.println("bot5");
-			bot5 bot5 = new bot5(2, 0.05);
+			bot5 bot5 = new bot5(3, 0.05);
 			int[] ret5 = new int[2];
 			ret5 = bot5.run();
 			
