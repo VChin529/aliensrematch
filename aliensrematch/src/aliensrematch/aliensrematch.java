@@ -8,7 +8,7 @@ public class aliensrematch {
 
 	public static void main(String[] args) {
 		int k = 1;
-		int iters = 30;
+		int iters = 1;
 		for(int i = 0; i < 4; i++){
 			if (i == 0) {
 				k = 1;
@@ -57,12 +57,12 @@ public class aliensrematch {
 					//double[] ret2 = new double[2];
 					//ret2 = bot2.run();
 
-					bot3 bot3 = new bot3(k, alpha);
+					bot4 bot3 = new bot4(k, alpha);
 					double[] ret3 = new double[2];
-					ret3 = bot3.run();
+					ret3= bot3.run();
 
 
-					bot6 bot6 = new bot6(k, alpha);
+					bot5 bot6 = new bot5(k, alpha);
 					double[] ret6 = new double[2];
 					ret6 = bot6.run();
 					/*if(ret1[0]==1){

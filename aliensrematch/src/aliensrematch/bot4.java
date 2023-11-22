@@ -415,7 +415,7 @@ public class bot4 {
 	// set initial crewmember probabilities
 	void initCrewProbs() {
 		board.pairs();
-		
+
 		board.board[x][y].pcrew = 0;
 		ArrayList<cell> pairs= board.getallCellPairs(board.board[x][y]);
 		for(int i=0; i<pairs.size(); i++){
@@ -519,7 +519,7 @@ public class bot4 {
 					totalProb+=board.pcellsDict.get(key);
 
 				}
-				
+
 				//System.out.println("TOTALPROB: " + totalProb);
 				for (String key : board.pcellsDict.keySet()) {
 					double value = board.pcellsDict.get(key);
@@ -713,7 +713,7 @@ public class bot4 {
 				}
 			}
 		}
-		
+
 		/*
 		for (String key : board.pcellsDict.keySet()) {
 			System.out.println("Key: " + key + " Value: " + board.pcellsDict.get(key));
@@ -774,11 +774,11 @@ public class bot4 {
 	}
 
 	// run the bot
-	int[] run() {
-		int[] ret = new int[2];
+	double[] run() {
+		double[] ret = new double[2];
 		int saved = 0; // # of crewmembers saved
 		int step = 0; // # of steps taken
-		
+
 		// keep looping
 		// we will break manually once we find the crewmember
 		while (true) {
@@ -836,20 +836,20 @@ public class bot4 {
 				} else {
 					crewmember2 = null;
 				}
-				
+
 				/*double beta = 0.0;
 				for (int i = 0; i < board.board.length; i++) {
 					for (int j = 0; j < board.board.length; j++) {
 						beta += board.board[i][j].pcrew;
 					}
 				}
-				
+
 				for (int i = 0; i < board.board.length; i++) {
 					for (int j = 0; j < board.board.length; j++) {
 						board.board[i][j].pcrew /= beta;
 					}
 				}*/
-				
+
 			}
 			// move aliens
 			alien.move();
