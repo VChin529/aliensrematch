@@ -14,7 +14,7 @@ public class bot7 {
 	alien alien1, alien2; // array of aliens
 	crewmember crewmember1, crewmember2; // crewmember to save
 	cell dest; // cell that we are moving towards. Highest crewmate probability
-	int debug = 1; // utility for debugging. ignore.
+	int debug = 0; // utility for debugging. ignore.
 	int debugpath = 0; // utility for debugging. ignore.
 
 	public bot7(int k, double alpha) {
@@ -94,10 +94,10 @@ public class bot7 {
 			String[] coords = key.split(",");
 			cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 			cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
-			if (!(alienScanCoord(cell1.x, cell1.y)) && !(alienScanCoord(cell2.x, cell2.y))) {
-				board.paliensDict.replace(key, 1.0/temp);
-			} else {
+			if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
 				board.paliensDict.replace(key, 0.0);
+			} else {
+				board.paliensDict.replace(key, 1.0/temp);
 			}
 		}
 
@@ -325,7 +325,7 @@ public class bot7 {
 		double beta = 0.0; // to calculate normalization constant
 		// scanner goes off
 		if (alienScan()) {
-			System.out.println("BOT MOVE ALIEN SCAN");
+			//System.out.println("BOT MOVE ALIEN SCAN");
 			board.board[x][y].palien = 0;
 			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
 			for(int i=0; i<pairs.size(); i++){
@@ -339,31 +339,45 @@ public class bot7 {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
-				if (alienScanCoord(cell1.x, cell1.y) && alienScanCoord(cell2.x, cell2.y)) {
-					System.out.println("in both condition?" + board.paliensDict.get(key));
+				if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
+					//System.out.println("in both condition?" + board.paliensDict.get(key));
 					total_prob_square += board.paliensDict.get(key);
 				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)){
 					total_prob_square += board.paliensDict.get(key);
 					total_prob_mixed += board.paliensDict.get(key);
 				}
 			}
-			System.out.println("SQUARE TOTAL :" + total_prob_square);
-			System.out.println("MIXED TOTAL :" + total_prob_mixed);
+			//System.out.println("SQUARE TOTAL :" + total_prob_square);
+			//System.out.println("MIXED TOTAL :" + total_prob_mixed);
 
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
+				//System.out.println("KEY: " + key);
+				//System.out.println("FIRST: " + board.paliensDict.get(key));
 				if (alienScanCoord(cell1.x, cell1.y) && alienScanCoord(cell2.x, cell2.y)) {
 					double value = board.paliensDict.get(key);
 					board.paliensDict.replace(key, value/total_prob_square);
 				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)){
 					double value = board.paliensDict.get(key);
-					board.paliensDict.replace(key, value/total_prob_mixed);
+					double denom = total_prob_square * total_prob_mixed;
+					board.paliensDict.replace(key, value/(denom));
 				} else {
 					board.paliensDict.replace(key, 0.0);
 				}
+				//System.out.println("SECOND " + board.paliensDict.get(key));
+				beta += board.paliensDict.get(key);
 			}
+
+			//System.out.println("BETA FOR PAIRS: " + beta);
+			for (String key: board.paliensDict.keySet()) {
+				double value = board.paliensDict.get(key);
+				board.paliensDict.replace(key, value/beta);
+				//System.out.println("KEY: " + key);
+				//System.out.println("THIRD " + board.paliensDict.get(key));
+			}
+
 
 
 			for (int i = 0; i < board.board.length; i++) {
@@ -379,7 +393,7 @@ public class bot7 {
 				}
 			}
 
-			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -391,7 +405,7 @@ public class bot7 {
 
 			// scanner does not go off
 		} else {
-			System.out.println("BOT MOVE NO ALIEN SCAN");
+			//System.out.println("BOT MOVE NO ALIEN SCAN");
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
@@ -403,15 +417,19 @@ public class bot7 {
 				}
 			}
 
-			System.out.println("BETA FOR PAIRS: " + beta);
+			//System.out.println("BETA FOR PAIRS: " + beta);
 
 			for (String key: board.paliensDict.keySet()) {
-				Double value = board.paliensDict.get(key);
+				double value = board.paliensDict.get(key);
+				//System.out.println("KEY: " + key);
+				//System.out.println("FIRST: " + value);
 				value = value/ beta;
 				board.paliensDict.replace(key, value);
+				//System.out.println("SECOND: " + value);
 				/*if (value.isNaN()) {
 					System.out.println("HERE1");
 				}*/
+
 			}
 
 
@@ -429,7 +447,7 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
-			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 
 			// normalize
 			for (int i = 0; i < board.board.length; i++) {
@@ -460,7 +478,7 @@ public class bot7 {
 
 		double beta = 0.0; // to calculate normalization constant
 		if (alienScan()) {
-			System.out.println("ALIEN MOVE SCANNER");
+			//System.out.println("ALIEN MOVE SCANNER");
 			board.board[x][y].palien = 0;
 			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
 			for(int i=0; i<pairs.size(); i++){
@@ -472,70 +490,74 @@ public class bot7 {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
-				if ((x==cell1.x && y==cell1.y) || (x==cell2.x && y==cell2.y)) {
-					continue;
-				} else {
-					ArrayList<cell> cell1neighbors = new ArrayList<cell>();
-					ArrayList<cell> cell2neighbors = new ArrayList<cell>();
+				//System.out.println("KEY: " + key);
+				//System.out.println("FIRST: " + board.paliensDict.get(key));
 
 
-					cell n = cell1.up;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell1neighbors.add(cell1.up);
-					}
-					n = cell1.down;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell1neighbors.add(cell1.down);
-					}
-					n = cell1.left;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell1neighbors.add(cell1.left);
-					}
-					n = cell1.right;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell1neighbors.add(cell1.right);
-					}
-
-					n = cell2.up;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell2neighbors.add(cell2.up);
-					}
-					n = cell2.down;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell2neighbors.add(cell2.down);
-					}
-					n = cell2.left;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell2neighbors.add(cell2.left);
-					}
-					n = cell2.right;
-					if (n != null && n.state && n.neighbor_ct != 0) {
-						cell2neighbors.add(cell2.right);
-					}
+				ArrayList<cell> cell1neighbors = new ArrayList<cell>();
+				ArrayList<cell> cell2neighbors = new ArrayList<cell>();
 
 
-					double prob = 0.0;
-					for(cell cell1n : cell1neighbors) {
-						for (cell cell2n : cell2neighbors) {
-							String key1 = board.findKeypAlien(cell1n.x, cell1n.y, cell2n.x, cell2n.y);
-							// if they are the same cell
-							if (key1 == null) {
-								continue;
-							}
-							prob += poldaliensDict.get(key1) * (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
-						}
-					}
-
-					board.paliensDict.replace(key,prob);
-					beta += prob;
+				cell n = cell1.up;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell1neighbors.add(cell1.up);
 				}
+				n = cell1.down;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell1neighbors.add(cell1.down);
+				}
+				n = cell1.left;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell1neighbors.add(cell1.left);
+				}
+				n = cell1.right;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell1neighbors.add(cell1.right);
+				}
+
+				n = cell2.up;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell2neighbors.add(cell2.up);
+				}
+				n = cell2.down;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell2neighbors.add(cell2.down);
+				}
+				n = cell2.left;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell2neighbors.add(cell2.left);
+				}
+				n = cell2.right;
+				if (n != null && n.state && n.neighbor_ct != 0) {
+					cell2neighbors.add(cell2.right);
+				}
+
+
+				double prob = 0.0;
+				for(cell cell1n : cell1neighbors) {
+					for (cell cell2n : cell2neighbors) {
+						String key1 = board.findKeypAlien(cell1n.x, cell1n.y, cell2n.x, cell2n.y);
+						// if they are the same cell
+						if (key1 == null) {
+							continue;
+						}
+						prob += poldaliensDict.get(key1) * (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+					}
+				}
+
+				//System.out.println("SECOND: " + prob);
+				board.paliensDict.replace(key,prob);
+				beta += prob;
+
 			}
-			
-			System.out.println("BETA FOR PAIRS: " + beta);
+
+			//System.out.println("BETA FOR PAIRS: " + beta);
 
 			for (String key: board.paliensDict.keySet()) {
 				double value = board.paliensDict.get(key);
 				board.paliensDict.replace(key, value/beta);
+				//System.out.println("KEY: " + key);
+				//System.out.println("THIRD: " + value/beta);
 			}
 
 
@@ -553,14 +575,16 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
-			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
-			
-			
+			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+
+
 		} else {
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
+				//System.out.println("KEY: " + key);
+				//System.out.println("FIRST: " + board.paliensDict.get(key));
 				if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
 					board.paliensDict.replace(key, 0.0);
 				} else {
@@ -613,12 +637,13 @@ public class bot7 {
 						}
 					}
 
+					//System.out.println("SECOND: " + prob);
 					board.paliensDict.replace(key,prob);
 					beta += prob;
 				}
 			}
-			
-			System.out.println("BETA FOR PAIRS: " + beta);
+
+			//System.out.println("BETA FOR PAIRS: " + beta);
 
 			//System.out.println("OUTSIDE LOOP");
 			for (String key: board.paliensDict.keySet()) {
@@ -626,7 +651,9 @@ public class bot7 {
 				double value = board.paliensDict.get(key);
 				board.paliensDict.replace(key, value/beta);
 				//System.out.println("MATH STUFF: " + value / beta);
-			}
+				//System.out.println("KEY: " + key);
+				//System.out.println("THIRD: " + value/beta);
+				}
 
 
 			// the new cells we just moved into now have a probability of 0
@@ -643,8 +670,8 @@ public class bot7 {
 					beta += curr.palien;
 				}
 			}
-			
-			System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+
+			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 		}
 
 		// normalize
