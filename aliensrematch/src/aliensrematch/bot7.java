@@ -22,7 +22,7 @@ public class bot7 {
 		this.k = k;
 		this.alpha = alpha;
 		// generate board dimension 50x50
-		board = new board(5);
+		board = new board(30);
 		// random placement of bot
 		cell curr = board.randomCell();
 		this.x = curr.x;
@@ -85,7 +85,9 @@ public class bot7 {
 			String[] coords = key.split(",");
 			cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 			cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
-			if (!(alienScanCoord(cell1.x, cell1.y)) && !(alienScanCoord(cell2.x, cell2.y))) {
+			if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
+				continue;
+			} else {
 				temp++;
 			}
 		}
@@ -327,28 +329,21 @@ public class bot7 {
 		if (alienScan()) {
 			//System.out.println("BOT MOVE ALIEN SCAN");
 			board.board[x][y].palien = 0;
-			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
+			/*ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
 			for(int i=0; i<pairs.size(); i++){
 				String key = board.findKeypAlien(x,y,pairs.get(i).x,pairs.get(i).y);
 				board.paliensDict.replace(key,0.0);
-			}
+			}*/
 
-			double total_prob_square = 0.0;
-			double total_prob_mixed = 0.0;
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
 				cell cell1 = board.board[Integer.parseInt(coords[0])][Integer.parseInt(coords[1])];
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 				if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
-					//System.out.println("in both condition?" + board.paliensDict.get(key));
-					total_prob_square += board.paliensDict.get(key);
-				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)){
-					total_prob_square += board.paliensDict.get(key);
-					total_prob_mixed += board.paliensDict.get(key);
+					beta += board.paliensDict.get(key);
 				}
 			}
-			//System.out.println("SQUARE TOTAL :" + total_prob_square);
-			//System.out.println("MIXED TOTAL :" + total_prob_mixed);
+
 
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
@@ -356,30 +351,20 @@ public class bot7 {
 				cell cell2 = board.board[Integer.parseInt(coords[2])][Integer.parseInt(coords[3])];
 				//System.out.println("KEY: " + key);
 				//System.out.println("FIRST: " + board.paliensDict.get(key));
-				if (alienScanCoord(cell1.x, cell1.y) && alienScanCoord(cell2.x, cell2.y)) {
+				if (cell1==board.board[x][y] || cell2==board.board[x][y]) {
+					board.paliensDict.replace(key, 0.0);
+				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)) {
 					double value = board.paliensDict.get(key);
-					board.paliensDict.replace(key, value/total_prob_square);
-				} else if (alienScanCoord(cell1.x, cell1.y) || alienScanCoord(cell2.x, cell2.y)){
-					double value = board.paliensDict.get(key);
-					double denom = total_prob_square * total_prob_mixed;
-					board.paliensDict.replace(key, value/(denom));
+					board.paliensDict.replace(key, value/beta);
 				} else {
 					board.paliensDict.replace(key, 0.0);
 				}
 				//System.out.println("SECOND " + board.paliensDict.get(key));
-				beta += board.paliensDict.get(key);
-			}
-
-			//System.out.println("BETA FOR PAIRS: " + beta);
-			for (String key: board.paliensDict.keySet()) {
-				double value = board.paliensDict.get(key);
-				board.paliensDict.replace(key, value/beta);
-				//System.out.println("KEY: " + key);
-				//System.out.println("THIRD " + board.paliensDict.get(key));
 			}
 
 
-
+			double total_square_prob = 0.0;
+			double total_outside_prob = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -389,15 +374,25 @@ public class bot7 {
 						newprob+= board.paliensDict.get(board.findKeypAlien(curr.x,curr.y,updatePairs.get(a).x,updatePairs.get(a).y));
 					}
 					curr.palien = newprob;
-					beta += curr.palien;
+					if (alienScanCoord(i,j)) {
+						total_square_prob += curr.palien;
+					} else {
+						total_outside_prob += curr.palien;
+					}
 				}
 			}
 
-			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+			//System.out.println("TOTAL INSIDE: " + total_square_prob);
+			//System.out.println("TOTAL OUTSIDE: " + total_outside_prob);
+
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					curr.palien *= 1.0 / beta;
+					if (alienScanCoord(i,j)) {
+						curr.palien *= 1.0/total_square_prob;
+					} else {
+						curr.palien *= 1.0/total_outside_prob;
+					}
 				}
 			}
 
@@ -424,8 +419,8 @@ public class bot7 {
 				//System.out.println("KEY: " + key);
 				//System.out.println("FIRST: " + value);
 				value = value/ beta;
-				board.paliensDict.replace(key, value);
-				//System.out.println("SECOND: " + value);
+				//board.paliensDict.replace(key, value);
+				System.out.println("SECOND: " + value);
 				/*if (value.isNaN()) {
 					System.out.println("HERE1");
 				}*/
@@ -433,8 +428,8 @@ public class bot7 {
 			}
 
 
-			// the new cells we just moved into now have a probability of 0
-			beta = 0.0;
+			//double total_square_prob = 0.0;
+			double total_outside_prob = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -444,20 +439,23 @@ public class bot7 {
 						newprob+= board.paliensDict.get(board.findKeypAlien(curr.x,curr.y,updatePairs.get(a).x,updatePairs.get(a).y));
 					}
 					curr.palien = newprob;
-					beta += curr.palien;
+					if (alienScanCoord(i,j)) {
+						continue;
+					} else {
+						total_outside_prob += curr.palien;
+					}
 				}
 			}
-			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 
-			// normalize
+			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
-					//Double value = (1.0 / beta) * curr.palien;
-					curr.palien = (1.0 / beta) * curr.palien;
-					/*if (value.isNaN()) {
-						System.out.println("HERE2");
-					}*/
+					if (alienScanCoord(i,j)) {
+						curr.palien = 0;
+					} else {
+						curr.palien *= 1.0/total_outside_prob;
+					}
 				}
 			}
 		}
@@ -479,12 +477,6 @@ public class bot7 {
 		double beta = 0.0; // to calculate normalization constant
 		if (alienScan()) {
 			//System.out.println("ALIEN MOVE SCANNER");
-			board.board[x][y].palien = 0;
-			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
-			for(int i=0; i<pairs.size(); i++){
-				String key = board.findKeypAlien(x,y,pairs.get(i).x,pairs.get(i).y);
-				board.paliensDict.replace(key,0.0);
-			}
 
 			for (String key: board.paliensDict.keySet()) {
 				String[] coords = key.split(",");
@@ -537,19 +529,48 @@ public class bot7 {
 				for(cell cell1n : cell1neighbors) {
 					for (cell cell2n : cell2neighbors) {
 						String key1 = board.findKeypAlien(cell1n.x, cell1n.y, cell2n.x, cell2n.y);
-						// if they are the same cell
-						if (key1 == null) {
+						if (key1==null) {
 							continue;
 						}
-						prob += poldaliensDict.get(key1) * (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+						double val = poldaliensDict.get(key1);
+						//double prob1 = cell1n.palien * (1.0/cell1n.neighbor_ct);
+						//double prob2 = cell2n.palien * (1.0/cell2n.neighbor_ct);
+						//prob += prob1 * prob2;
+
+						double temp = (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+
+						if (cell2n == cell1 &&  cell1n == cell2) {
+							temp += (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+						}
+
+						prob += val * temp;
+						//prob += prob1 + prob2 - (prob1*prob2);
+						/*if (key1 == null) { // same cell
+							prob += prob1 + prob2 - (prob1*prob2);
+							continue;
+						} else {
+							prob += prob1 * prob2;
+						}*/
 					}
 				}
 
+				if (cell1==board.board[x][y] || cell1==board.board[x][y]) {
+					board.paliensDict.replace(key,  0.0);
+				} else {
+					board.paliensDict.replace(key,prob);
+				}
 				//System.out.println("SECOND: " + prob);
-				board.paliensDict.replace(key,prob);
 				beta += prob;
 
 			}
+
+			/*board.board[x][y].palien = 0;
+			ArrayList<cell> pairs= board.getallAlienPairs(board.board[x][y]);
+			for(int i=0; i<pairs.size(); i++){
+				String key = board.findKeypAlien(x,y,pairs.get(i).x,pairs.get(i).y);
+				beta -= board.paliensDict.get(key);
+				board.paliensDict.replace(key,0.0);
+			}*/
 
 			//System.out.println("BETA FOR PAIRS: " + beta);
 
@@ -561,8 +582,8 @@ public class bot7 {
 			}
 
 
-			// the new cells we just moved into now have a probability of 0
-			beta = 0.0;
+			double total_square_prob = 0.0;
+			double total_outside_prob = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -572,10 +593,27 @@ public class bot7 {
 						newprob+= board.paliensDict.get(board.findKeypAlien(curr.x,curr.y,updatePairs.get(a).x,updatePairs.get(a).y));
 					}
 					curr.palien = newprob;
-					beta += curr.palien;
+					if (alienScanCoord(i,j)) {
+						total_square_prob += curr.palien;
+					} else {
+						total_outside_prob += curr.palien;
+					}
 				}
 			}
-			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
+
+			//System.out.println("TOTAL INSIDE: " + total_square_prob);
+			//System.out.println("TOTAL OUTSIDE: " + total_outside_prob);
+
+			for (int i = 0; i < board.board.length; i++) {
+				for (int j = 0; j < board.board.length; j++) {
+					cell curr = board.board[i][j];
+					if (alienScanCoord(i,j)) {
+						curr.palien *= 1.0/total_square_prob;
+					} else {
+						curr.palien *= 1.0/total_outside_prob;
+					}
+				}
+			}
 
 
 		} else {
@@ -630,10 +668,28 @@ public class bot7 {
 					for(cell cell1n : cell1neighbors) {
 						for (cell cell2n : cell2neighbors) {
 							String key1 = board.findKeypAlien(cell1n.x, cell1n.y, cell2n.x, cell2n.y);
-							if (key1 == null) {
+							if (key1==null) {
 								continue;
 							}
-							prob += poldaliensDict.get(key1) * (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+							double val = poldaliensDict.get(key1);
+							//double prob1 = cell1n.palien * (1.0/cell1n.neighbor_ct);
+							//double prob2 = cell2n.palien * (1.0/cell2n.neighbor_ct);
+							//prob += prob1 * prob2;
+
+							double temp = (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+
+							if (cell2n == cell1 &&  cell1n == cell2) {
+								temp += (1.0/cell1n.neighbor_ct) * (1.0/cell2n.neighbor_ct);
+							}
+
+							prob += val * temp;
+							//prob += prob1 + prob2 - (prob1*prob2);
+							/*if (key1 == null) { // same cell
+								prob += prob1 + prob2 - (prob1*prob2);
+								continue;
+							} else {
+								prob += prob1 * prob2;
+							}*/
 						}
 					}
 
@@ -653,11 +709,11 @@ public class bot7 {
 				//System.out.println("MATH STUFF: " + value / beta);
 				//System.out.println("KEY: " + key);
 				//System.out.println("THIRD: " + value/beta);
-				}
+			}
 
 
-			// the new cells we just moved into now have a probability of 0
-			beta = 0.0;
+			//double total_square_prob = 0.0;
+			double total_outside_prob = 0.0;
 			for (int i = 0; i < board.board.length; i++) {
 				for (int j = 0; j < board.board.length; j++) {
 					cell curr = board.board[i][j];
@@ -667,19 +723,24 @@ public class bot7 {
 						newprob+= board.paliensDict.get(board.findKeypAlien(curr.x,curr.y,updatePairs.get(a).x,updatePairs.get(a).y));
 					}
 					curr.palien = newprob;
-					beta += curr.palien;
+
+					total_outside_prob += curr.palien;
+
 				}
 			}
 
-			//System.out.println("BETA FOR INDIVIDUAL CELLS: " + beta);
-		}
+			//System.out.println("TOTAL OUTSIDE PROB: " + total_outside_prob);
+			for (int i = 0; i < board.board.length; i++) {
+				for (int j = 0; j < board.board.length; j++) {
+					cell curr = board.board[i][j];
 
-		// normalize
-		for (int i = 0; i < board.board.length; i++) {
-			for (int j = 0; j < board.board.length; j++) {
-				cell curr = board.board[i][j];
-				curr.palien = (1.0 / beta) * curr.palien;
+					curr.palien *= 1.0/total_outside_prob;
+
+				}
 			}
+
+
+
 		}
 	}
 
